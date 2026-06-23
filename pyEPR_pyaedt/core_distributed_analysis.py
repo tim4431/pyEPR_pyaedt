@@ -429,7 +429,7 @@ class DistributedAnalysis(object):
         if variation is None:
             return self._nominal_variation
 
-        return self._list_variations[ureg(variation)]
+        return self._list_variations[int(variation)]
 
     def _parse_listvariations(self, lv):
         """
@@ -1608,7 +1608,7 @@ class DistributedAnalysis(object):
             1	substrate	1490356	    0.000270	0.893770	0.023639	    1.160090e-12	0.031253	0.000007	2.309920e-04
 
         """
-        variation = self._list_variations[ureg(variation)]
+        variation = self._list_variations[int(variation)]
         return self.setup.get_mesh_stats(variation)
 
     def get_convergence(self, variation="0"):
@@ -1630,7 +1630,7 @@ class DistributedAnalysis(object):
                 4       	199244	        1.524000
 
         """
-        variation = self._list_variations[ureg(variation)]
+        variation = self._list_variations[int(variation)]
         df, _ = self.setup.get_convergence(variation)
         return df
 
