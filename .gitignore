@@ -101,14 +101,16 @@ ENV/
 .mypy_cache/
 
 # exclude config
-pyEPR/config.py
-pyEPR/_user_config.py
+pyEPR_pyaedt/config.py
+pyEPR_pyaedt/_user_config.py
 __src__not_incl/
-pyEPR/.vscode/
-pyEPR/.pylintrc
+pyEPR_pyaedt/.vscode/
+pyEPR_pyaedt/.pylintrc
 *.lock
 *.aedtresults/*
 *.aedtresults*
-pyEPR/core.py.rej
+# AEDT working-copy duplicates opened in HFSS, e.g. "pyEPR_tutorial1 (1).aedt"
+* (*).aedt
+pyEPR_pyaedt/core.py.rej
 .vscode/
 .idea/
