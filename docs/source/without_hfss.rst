@@ -32,7 +32,7 @@ any time.
 
 .. code-block:: python
 
-   import pyEPR as epr
+   import pyEPR_pyaedt as epr
 
    # Path to the HDF5 file written by do_EPR_analysis()
    data_file = r'C:\sim_results\my_device.hdf5'   # Windows path
@@ -89,8 +89,8 @@ readout cavity:
 
    import numpy as np
    import pandas as pd
-   import pyEPR as epr
-   from pyEPR.core_quantum_analysis import QuantumAnalysis, HamiltonianResultsContainer
+   import pyEPR_pyaedt as epr
+   from pyEPR_pyaedt.core_quantum_analysis import QuantumAnalysis, HamiltonianResultsContainer
 
    # ── Device parameters ────────────────────────────────────────────────────
    modes     = ['qubit', 'cavity']

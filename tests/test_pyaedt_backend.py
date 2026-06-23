@@ -41,10 +41,10 @@ class _Blocker:
 
 sys.meta_path.insert(0, _Blocker())
 
-import pyEPR                      # full package init
-import pyEPR.solution_types       # must stay COM/pyaedt free
-import pyEPR.calcs                # must stay COM/pyaedt free
-import pyEPR.ansys                # must still import (connection guarded/lazy)
+import pyEPR_pyaedt                      # full package init
+import pyEPR_pyaedt.solution_types       # must stay COM/pyaedt free
+import pyEPR_pyaedt.calcs                # must stay COM/pyaedt free
+import pyEPR_pyaedt.ansys                # must still import (connection guarded/lazy)
 
 # None of the blocked packages should have been imported as a side effect.
 for _m in ("win32com", "ansys.aedt.core", "pyaedt", "pythoncom"):
@@ -69,7 +69,7 @@ def test_no_hfss_import_path_is_clean():
 
 def test_ansys_module_exposes_public_surface():
     """The rewritten ansys.py still exports the names consumers rely on."""
-    from pyEPR import ansys
+    from pyEPR_pyaedt import ansys
 
     for name in (
         "HfssApp",
@@ -91,7 +91,7 @@ def test_ansys_module_exposes_public_surface():
 # ---------------------------------------------------------------------------
 
 def test_connect_raises_actionable_error_without_pyaedt():
-    from pyEPR import _pyaedt_backend as backend
+    from pyEPR_pyaedt import _pyaedt_backend as backend
 
     if backend.is_pyaedt_available():
         pytest.skip("PyAEDT is installed in this environment; skipping missing-dep test")
@@ -102,7 +102,7 @@ def test_connect_raises_actionable_error_without_pyaedt():
 
 
 def test_download_if_remote_is_noop_when_local():
-    from pyEPR import _pyaedt_backend as backend
+    from pyEPR_pyaedt import _pyaedt_backend as backend
 
     # With no remote gRPC session (or no PyAEDT at all) the path is unchanged.
     p = r"C:\some\export\eigenmodes.csv"
@@ -112,7 +112,7 @@ def test_download_if_remote_is_noop_when_local():
 def test_server_export_path_prefers_working_directory(tmp_path):
     import os
 
-    from pyEPR import _pyaedt_backend as backend
+    from pyEPR_pyaedt import _pyaedt_backend as backend
 
     app = types.SimpleNamespace(working_directory=str(tmp_path))
     out = backend.server_export_path(app, "eigenmodes.csv")
@@ -154,7 +154,7 @@ class _FakeDesktop:
 @pytest.fixture
 def fake_pyaedt(monkeypatch):
     """Inject a fake ``ansys.aedt.core`` module into the backend's import cache."""
-    from pyEPR import _pyaedt_backend as backend
+    from pyEPR_pyaedt import _pyaedt_backend as backend
 
     fake_module = types.SimpleNamespace(Desktop=_FakeDesktop)
     monkeypatch.setattr(backend, "_pyaedt", fake_module)
@@ -187,7 +187,7 @@ def test_connect_desktop_passes_launch_options(fake_pyaedt):
 
 
 def test_hfssapp_builds_desktop_from_pyaedt(fake_pyaedt):
-    from pyEPR import ansys
+    from pyEPR_pyaedt import ansys
 
     app = ansys.HfssApp()
     desktop = app.get_app_desktop()
@@ -237,7 +237,7 @@ def test_calcobject_emits_expected_fields_calculator_stack():
     identically whether the underlying module is win32com (Windows/COM) or a gRPC
     wrapper (Linux), because both are driven through the same string API.
     """
-    from pyEPR import ansys
+    from pyEPR_pyaedt import ansys
 
     recorder = _RecordingFieldsModule()
     setup = _FakeSetup(recorder)

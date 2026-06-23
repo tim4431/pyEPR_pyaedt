@@ -5,7 +5,7 @@ Tutorial Notebooks
 
 Six Jupyter notebook tutorials covering the full pyEPR workflow.
 Tutorials 1, 2, and 4 require a live Ansys HFSS session.
-Tutorials 3, 5, and 6 run entirely with ``pip install pyEPR-quantum`` — no Ansys licence needed.
+Tutorials 3, 5, and 6 run entirely with ``pip install pyEPR-pyaedt`` — no Ansys licence needed.
 
 .. grid:: 1
    :gutter: 3

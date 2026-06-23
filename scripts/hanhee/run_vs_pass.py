@@ -6,7 +6,7 @@ The results are saved, printed, and nicely plotted.
 @author: Zlatko
 """
 
-from pyEPR import ProjectInfo, DistributedAnalysis, QuantumAnalysis
+from pyEPR_pyaedt import ProjectInfo, DistributedAnalysis, QuantumAnalysis
 
 # 1.  Project and design. Open link to HFSS controls.
 project_info = ProjectInfo(
@@ -51,7 +51,7 @@ print(" HFSS setup name: %s" % setup_name)
 #%%
 from numpy import diag, sqrt, array
 import pandas as pd
-from pyEPR.toolbox import get_above_diagonal
+from pyEPR_pyaedt.toolbox import get_above_diagonal
 
 
 def do_analysis(pass_, variation="0"):
@@ -79,7 +79,7 @@ def do_analysis(pass_, variation="0"):
     # RES[pass_]['ND']         = None
     if 1:
         print(" ND pass=%s variation=%s" % (pass_, variation))
-        from pyEPR.core import pyEPR_ND
+        from pyEPR_pyaedt.core import pyEPR_ND
 
         f1_ND, CHI_ND = pyEPR_ND(
             epr.freqs_hfss[variation],
@@ -238,8 +238,8 @@ def do_plot(RES):
     import matplotlib.pyplot as plt
     import pandas as pd
     import numpy as np
-    from pyEPR.toolbox_plotting import legend_translucent
-    from pyEPR.toolbox import combinekw, xarray_unravel_levels, floor_10
+    from pyEPR_pyaedt.toolbox_plotting import legend_translucent
+    from pyEPR_pyaedt.toolbox import combinekw, xarray_unravel_levels, floor_10
 
     plt.ion()
 

@@ -1,7 +1,7 @@
 pyEPR.reports module
 ====================
 
-.. automodule:: pyEPR.reports
+.. automodule:: pyEPR_pyaedt.reports
    :members:
    :undoc-members:
    :show-inheritance:

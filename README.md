@@ -2,7 +2,7 @@ pyEPR — Energy-Participation-Ratio Framework
 ===========================================
 ### Automated Python module for the design and quantization of Josephson quantum circuits
 
-[![PyPI version](https://badge.fury.io/py/pyEPR-quantum.svg)](https://badge.fury.io/py/pyEPR-quantum)
+[![PyPI version](https://badge.fury.io/py/pyEPR-pyaedt.svg)](https://badge.fury.io/py/pyEPR-pyaedt)
 [![CI](https://github.com/zlatko-minev/pyEPR/actions/workflows/ci.yaml/badge.svg)](https://github.com/zlatko-minev/pyEPR/actions/workflows/ci.yaml)
 [![DOI](https://zenodo.org/badge/101073856.svg)](https://zenodo.org/badge/latestdoi/101073856)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/zlatko-minev/pyEPR/master?filepath=_tutorial_notebooks%2FTutorial%206.%20EPR%20without%20HFSS%20%E2%80%94%20purely%20numerical%20workflow.ipynb)
@@ -33,14 +33,14 @@ No manual circuit diagram — only the 3-D geometry.
 ## Install
 
 ```sh
-pip install pyEPR-quantum
+pip install pyEPR-pyaedt
 ```
 
 Requires Python 3.9–3.12.  All dependencies (`numpy`, `qutip`, `matplotlib`, …) are installed automatically.
 
 **conda:**
 ```sh
-conda install -c conda-forge pyepr-quantum
+conda install -c conda-forge pyepr-pyaedt
 ```
 
 **development install:**
@@ -55,7 +55,7 @@ Compute the transmon anharmonicity from first principles, no HFSS needed:
 
 ```python
 import numpy as np
-from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
 
 # Standard transmon: E_J/h = 20 GHz, E_C/h = 300 MHz
 # Plasma frequency f_p = sqrt(8 E_J E_C)/h ≈ 6.93 GHz
@@ -78,7 +78,7 @@ For multi-mode systems, fluxonium, or custom potentials: **[Tutorial 6](https://
 ## Full HFSS workflow
 
 ```python
-import pyEPR as epr
+import pyEPR_pyaedt as epr
 
 # 1. Connect to Ansys HFSS
 pinfo = epr.ProjectInfo(project_path=r'C:\sim_folder',
@@ -119,7 +119,7 @@ The tutorials are Jupyter notebooks in [`_tutorial_notebooks/`](https://github.c
 | 5 | [Generic junction potential & fluxonium](https://github.com/zlatko-minev/pyEPR/blob/master/_tutorial_notebooks/Tutorial%205.%20Generic%20junction%20potential%20and%20fluxonium%20EPR.ipynb) | **No** | Exact cosine for fluxonium; custom V(phi); asymmetric SQUIDs |
 | 6 | [EPR without HFSS](https://github.com/zlatko-minev/pyEPR/blob/master/_tutorial_notebooks/Tutorial%206.%20EPR%20without%20HFSS%20%E2%80%94%20purely%20numerical%20workflow.ipynb) | **No** | Numerical workflow: supply freqs, Ljs, phi_zpf directly |
 
-> Tutorials 3, 5, and 6 require only `pip install pyEPR-quantum` — no Ansys licence.
+> Tutorials 3, 5, and 6 require only `pip install pyEPR-pyaedt` — no Ansys licence.
 
 ## Video Tutorials
 
@@ -210,7 +210,7 @@ See the [troubleshooting guide](https://pyepr-docs.readthedocs.io/en/latest/trou
 **Common issues:**
 
 - **pint error `system='mks' unknown`** — upgrade pint: `pip install pint --upgrade`
-- **QuTiP not found** — it is installed automatically with pyEPR-quantum; for manual install: `pip install qutip`
+- **QuTiP not found** — it is installed automatically with pyEPR-pyaedt; for manual install: `pip install qutip`
 - **COM Error on opening HFSS** — check file path (no apostrophes/special chars); check HFSS hasn't popped an error dialog
 - **Parametric sweep missing field solutions** — enable "Save Fields and Mesh" in ParametricSetup → Properties → Options (see Tutorial 4)
 - **`ValueError: cannot set WRITEABLE flag`** — upgrade numpy

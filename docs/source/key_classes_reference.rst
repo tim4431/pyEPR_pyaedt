@@ -22,7 +22,7 @@ All three are importable from the top-level ``pyEPR`` namespace:
 
 .. code-block:: python
 
-   import pyEPR as epr
+   import pyEPR_pyaedt as epr
 
    pinfo = epr.ProjectInfo(...)
    eprd  = epr.DistributedAnalysis(pinfo)
@@ -56,7 +56,7 @@ Key attributes:
    pinfo.setup              # HfssSetup wrapper (eigenmode or driven-modal)
    pinfo.design             # HfssDesign wrapper
 
-Full API: :class:`pyEPR.project_info.ProjectInfo`
+Full API: :class:`pyEPR_pyaedt.project_info.ProjectInfo`
 
 
 .. _distributed-analysis:
@@ -84,7 +84,7 @@ Key methods:
    eprd.hfss_report_full_convergence()# print/plot adaptive-pass convergence
    eprd.data_filename                 # path to the saved HDF5 results file
 
-Full API: :class:`pyEPR.core_distributed_analysis.DistributedAnalysis`
+Full API: :class:`pyEPR_pyaedt.core_distributed_analysis.DistributedAnalysis`
 
 
 .. _quantum-analysis:
@@ -120,30 +120,30 @@ Key methods:
   size grows as ``fock_trunc ** n_modes``, so keep this small for
   many-mode systems.  Typical range: 6–10.
 
-Full API: :class:`pyEPR.core_quantum_analysis.QuantumAnalysis`
+Full API: :class:`pyEPR_pyaedt.core_quantum_analysis.QuantumAnalysis`
 
 
 solution_types module
 ---------------------
 
-``pyEPR.solution_types`` exposes canonical solution-type constants and
+``pyEPR_pyaedt.solution_types`` exposes canonical solution-type constants and
 helpers for handling the AEDT 2021.2+ renamed solution-type strings:
 
 .. code-block:: python
 
-   from pyEPR.solution_types import normalize, DRIVEN_MODAL_NAMES, is_drivenmodal
+   from pyEPR_pyaedt.solution_types import normalize, DRIVEN_MODAL_NAMES, is_drivenmodal
 
    normalize("HFSS Modal Network")           # → "DrivenModal"
    normalize("HFSS Hybrid Terminal Network") # → "DrivenTerminal"
    is_drivenmodal("HFSS Modal Network")      # → True
 
-Full API: :mod:`pyEPR.solution_types`
+Full API: :mod:`pyEPR_pyaedt.solution_types`
 
 
 calcs subpackage
 -----------------
 
-``pyEPR.calcs`` contains the low-level analytic and numeric routines:
+``pyEPR_pyaedt.calcs`` contains the low-level analytic and numeric routines:
 
 .. list-table::
    :widths: 30 70
@@ -169,5 +169,5 @@ directly for custom calculations:
 
 .. code-block:: python
 
-   from pyEPR.calcs.transmon import transmon_get_spectrum_charge_basis
-   from pyEPR.calcs.convert import Convert
+   from pyEPR_pyaedt.calcs.transmon import transmon_get_spectrum_charge_basis
+   from pyEPR_pyaedt.calcs.convert import Convert

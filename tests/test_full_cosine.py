@@ -47,7 +47,7 @@ def _fluxonium_params():
 
 class TestFullCosineSmoke:
     def test_truncated_cos_runs(self):
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _transmon_params()
         f_ND, chi_ND = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, cos_trunc=8, fock_trunc=9
@@ -55,7 +55,7 @@ class TestFullCosineSmoke:
         assert f_ND is not None and chi_ND is not None
 
     def test_full_cos_flag_runs(self):
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _transmon_params()
         f_ND, chi_ND = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, fock_trunc=9, use_full_cos=True
@@ -63,7 +63,7 @@ class TestFullCosineSmoke:
         assert f_ND is not None and chi_ND is not None
 
     def test_full_cos_returns_finite_values(self):
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _transmon_params()
         f_ND, chi_ND = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, fock_trunc=9, use_full_cos=True
@@ -73,7 +73,7 @@ class TestFullCosineSmoke:
 
     def test_full_cos_fluxonium_runs(self):
         """Full cosine must not crash for large phi_zpf (fluxonium regime)."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _fluxonium_params()
         f_ND, chi_ND = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, fock_trunc=20, use_full_cos=True
@@ -89,7 +89,7 @@ class TestFullCosConvergence:
 
     def test_transmon_freqs_agree_high_trunc(self):
         """cos_trunc=16 and use_full_cos should agree to <0.1% for transmon."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _transmon_params()
         f_trunc, _ = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, cos_trunc=16, fock_trunc=15
@@ -103,7 +103,7 @@ class TestFullCosConvergence:
         )
 
     def test_transmon_chi_agree_high_trunc(self):
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _transmon_params()
         _, chi_trunc = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, cos_trunc=16, fock_trunc=15
@@ -118,7 +118,7 @@ class TestFullCosConvergence:
 
     def test_low_trunc_differs_from_full(self):
         """Low truncation order gives inaccurate results even for transmon."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _transmon_params()
         _, chi_low = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, cos_trunc=4, fock_trunc=15
@@ -136,7 +136,7 @@ class TestFullCosConvergence:
 class TestFullCosFluxonium:
     def test_fluxonium_freqs_differ_from_low_trunc(self):
         """Low truncation gives wrong frequencies for fluxonium (phi_zpf~2)."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _fluxonium_params()
         f_low, _ = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, cos_trunc=4, fock_trunc=25
@@ -152,7 +152,7 @@ class TestFullCosFluxonium:
 
     def test_fluxonium_anharmonicity_sign(self):
         """Fluxonium anharmonicity (chi[0,0]) should be positive (red shift convention)."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs, Ljs, phi_zpf = _fluxonium_params()
         _, chi_full = epr_numerical_diagonalization(
             freqs, Ljs, phi_zpf, fock_trunc=25, use_full_cos=True
@@ -166,7 +166,7 @@ class TestMatrixOpsCos:
     def test_cos_zero_is_identity(self):
         """cos(0) = I."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         n = 5
         zero_op = qutip.qzero(n)
         result = MatrixOps.cos(zero_op)
@@ -175,7 +175,7 @@ class TestMatrixOpsCos:
     def test_cos_is_hermitian(self):
         """cos(H) is Hermitian when H is Hermitian."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(8)
         H = 0.3 * (a + a.dag())
         result = MatrixOps.cos(H)
@@ -184,7 +184,7 @@ class TestMatrixOpsCos:
     def test_cos_agrees_with_numpy_on_diagonal(self):
         """For a diagonal operator, cos should match numpy.cos element-wise."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         angles = np.linspace(0, np.pi, 5)
         diag_op = qutip.Qobj(np.diag(angles))
         result = MatrixOps.cos(diag_op).full().real
@@ -193,7 +193,7 @@ class TestMatrixOpsCos:
     def test_cos_full_correction_zero_is_zero(self):
         """cos(0) - I + 0²/2 = I - I + 0 = 0."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         zero_op = qutip.qzero(6)
         result = MatrixOps.cos_full_correction(zero_op)
         np.testing.assert_allclose(result.full(), np.zeros((6, 6)), atol=1e-12)
@@ -201,7 +201,7 @@ class TestMatrixOpsCos:
     def test_cos_full_correction_is_hermitian(self):
         """cos_full_correction(H) is Hermitian when H is Hermitian."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(8)
         H = 0.5 * (a + a.dag())
         result = MatrixOps.cos_full_correction(H)
@@ -210,7 +210,7 @@ class TestMatrixOpsCos:
     def test_cos_full_correction_matches_series_small_arg(self):
         """cos(x) - I + x²/2 should match high-order cos_approx for small x."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(10)
         x = 0.1 * (a + a.dag())
         full = MatrixOps.cos_full_correction(x)
@@ -223,7 +223,7 @@ class TestMatrixOpsCos:
 class TestFullCosFlag:
     def test_use_full_cos_produces_different_result_than_low_trunc(self):
         """use_full_cos=True differs from cos_trunc=4 at moderate phi_zpf."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         freqs = np.array([3.0])
         Ljs   = np.array([20e-9])
         phi_zpf = np.array([[0.8]])  # moderate — series converges slowly
@@ -237,8 +237,8 @@ class TestFullCosFlag:
 
     def test_explicit_non_linear_potential_overrides_use_full_cos(self):
         """Explicit non_linear_potential takes precedence over use_full_cos flag."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
 
         freqs, Ljs, phi_zpf = _transmon_params()
         f_full, _ = epr_numerical_diagonalization(

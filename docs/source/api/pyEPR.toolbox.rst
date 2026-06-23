@@ -1,7 +1,7 @@
 pyEPR.toolbox package
 =====================
 
-.. automodule:: pyEPR.toolbox
+.. automodule:: pyEPR_pyaedt.toolbox
    :members:
    :undoc-members:
    :show-inheritance:

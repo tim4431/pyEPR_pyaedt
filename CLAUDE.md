@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |------|-------------|
 | `.claude/context/lessons-learned.md` | Before touching docs, CI, Sphinx config, or Ansys version code. Contains every hard-won fix from real build failures and regressions. |
 | `.claude/context/ecosystem.md` | Before changing public API, release timing, imports, or anything that could affect downstream users. Explains who uses pyEPR, the quantum-metal relationship, and the no-HFSS adoption path. |
-| `PYAEDT_MIGRATION_PLAN.md` | Before any work on PyAEDT compatibility / replacing the `win32com` COM layer. Phased plan for a pluggable connection backend (`com` vs `pyaedt`), the gRPC export-file gotcha, and the backwards-compat constraints. |
+| `PYAEDT_MIGRATION_PLAN.md` | Before any work on PyAEDT compatibility / the `win32com` COM layer. Records the **full-rewrite-onto-PyAEDT** decision (target AEDT 2025 R2), the phase tracker (Phase 1 connection layer done), the gRPC export-file gotcha, and backwards-compat constraints. NOTE: the import package is now `pyEPR_pyaedt` (distribution `pyEPR-pyaedt`); `import pyEPR` no longer works. |
 
 ## Slash commands
 
@@ -34,8 +34,8 @@ pytest tests/test_solution_types.py -v
 pytest -m hfss
 
 # Lint (CI runs errors-only; locally use full output)
-pylint pyEPR/                    # full report
-pylint --errors-only pyEPR/      # CI mode
+pylint pyEPR_pyaedt/                    # full report
+pylint --errors-only pyEPR_pyaedt/      # CI mode
 
 # Build docs locally (must copy notebooks first — see Docs section)
 rm -rf docs/source/_tutorial_notebooks
@@ -55,7 +55,7 @@ Key pytest config (`pyproject.toml`): default `addopts = "-m 'not hfss'"`, so HF
 ### Package layout
 
 ```
-pyEPR/
+pyEPR_pyaedt/
   __init__.py              # public API, version string, import checks
   ansys.py                 # COM wrappers for Ansys HFSS / Q3D
   solution_types.py        # canonical names, alias frozensets, normalize()
@@ -93,10 +93,10 @@ All COM objects are accessed via a thin `COMWrapper` base that delegates attribu
 
 ### solution_types module
 
-`pyEPR/solution_types.py` is the single source of truth for HFSS solution-type string handling. Import from here rather than duplicating alias sets:
+`pyEPR_pyaedt/solution_types.py` is the single source of truth for HFSS solution-type string handling. Import from here rather than duplicating alias sets:
 
 ```python
-from pyEPR.solution_types import normalize, DRIVEN_MODAL_NAMES, is_drivenmodal
+from pyEPR_pyaedt.solution_types import normalize, DRIVEN_MODAL_NAMES, is_drivenmodal
 ```
 
 ## Testability boundary
@@ -193,7 +193,7 @@ These have each caused real build failures. Know them before editing docs or doc
 
 ## Release workflow
 
-1. Bump `__version__` in `pyEPR/__init__.py` — `pyproject.toml` reads version dynamically from there.
+1. Bump `__version__` in `pyEPR_pyaedt/__init__.py` — `pyproject.toml` reads version dynamically from there.
 2. Commit and push to master via PR (never direct-push to master).
 3. After the PR merges, create a GitHub Release with tag `vX.Y.Z` (e.g. `v0.9.6`). The `publish-to-pypi.yml` workflow triggers on `release: created` and uses OIDC Trusted Publishing — no API token needed.
 4. Verify the published version on PyPI matches `__version__`. If the version was not bumped before tagging, the wheel will carry the wrong version.

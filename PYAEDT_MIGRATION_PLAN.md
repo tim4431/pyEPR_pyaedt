@@ -42,8 +42,8 @@ working_directory/aedt_version_id`, plus `settings.use_grpc_api` and
 | 4. gRPC / Linux exports | Route the 5 `tempfile.mktemp()` `Export*` sites through `server_export_path` + `download_if_remote` | Planned (no-op on Windows/2025.2; needed for Linux) |
 | 5. Q3D + modeler | Validate Q3D matrix path; decide whether to port `HfssModeler` to PyAEDT's modeler | Planned / optional |
 
-**Files changed in Phase 1:** `pyEPR/_pyaedt_backend.py` (new),
-`pyEPR/ansys.py` (bootstrap re-plumbed), `pyEPR/__init__.py` (import warning),
+**Files changed in Phase 1:** `pyEPR_pyaedt/_pyaedt_backend.py` (new),
+`pyEPR_pyaedt/ansys.py` (bootstrap re-plumbed), `pyEPR_pyaedt/__init__.py` (import warning),
 `pyproject.toml` (`[aedt]` extra), `tests/test_pyaedt_backend.py` (new).
 Branch: `claude/pyaedt-rewrite`.
 
@@ -120,7 +120,7 @@ Hard constraints (from `CLAUDE.md` / context files) — these shape every choice
 
 ## 2. Current Ansys-interaction surface (what we're porting)
 
-All COM lives in **`pyEPR/ansys.py`**; everything else is pure-Python and
+All COM lives in **`pyEPR_pyaedt/ansys.py`**; everything else is pure-Python and
 delegates through wrapper objects. The Windows-only footprint is tiny and fully
 localized:
 
@@ -181,7 +181,7 @@ handle-acquisition layer changes.
 ProjectInfo.connect(backend="com" | "pyaedt")
         │
         ▼
-pyEPR/_ansys_backend.py   ← NEW; the only place that imports pyaedt
+pyEPR_pyaedt/_ansys_backend.py   ← NEW; the only place that imports pyaedt
    ├─ ComBackend     : Dispatch(...)  → native desktop/project/design objects
    └─ PyAedtBackend  : ansys.aedt.core.Desktop/Hfss(...) → .odesktop/.oproject/.odesign
         │  returns native handles
@@ -214,7 +214,7 @@ idiomatic PyAEDT later (new features only), never ripping out working code.
 ### Phase 0 — Scaffolding & safety net (no behavior change)
 - `pyproject.toml`: add optional extra
   `aedt = ["ansys-aedt-core>=0.9"]` (keep out of core `dependencies`).
-- New module `pyEPR/_ansys_backend.py`; allow `ansys.aedt.core` import **only**
+- New module `pyEPR_pyaedt/_ansys_backend.py`; allow `ansys.aedt.core` import **only**
   here and in `ansys.py`. Add a lint/CI guard asserting no pyaedt/win32com
   import leaks into `solution_types.py` or `calcs/`.
 - **CI-safe contract test for the field calculator:** feed `CalcObject` a *fake*
@@ -294,8 +294,8 @@ idiomatic PyAEDT later (new features only), never ripping out working code.
   manually on a licensed box (Windows for both; Linux for pyaedt/gRPC). Assert
   χ-matrix / eigenfrequencies match `correct_results.pkl` within tolerance —
   *equality of numerics across backends is the acceptance criterion.*
-- **Import-isolation test:** assert `import pyEPR.solution_types` and
-  `import pyEPR.calcs` succeed with neither `win32com` nor `ansys.aedt.core`
+- **Import-isolation test:** assert `import pyEPR_pyaedt.solution_types` and
+  `import pyEPR_pyaedt.calcs` succeed with neither `win32com` nor `ansys.aedt.core`
   importable (simulate Linux / no-extras).
 
 ---

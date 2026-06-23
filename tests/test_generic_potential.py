@@ -37,7 +37,7 @@ class TestApplyScalarFunction:
     def test_cos_matches_matrix_exponential(self):
         """apply_scalar_function(phi, np.cos) should equal MatrixOps.cos(phi)."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(8)
         phi = 0.3 * (a + a.dag())
         via_expm = MatrixOps.cos(phi)
@@ -47,7 +47,7 @@ class TestApplyScalarFunction:
     def test_identity_function_returns_operator(self):
         """apply_scalar_function(H, lambda x: x) should be a no-op."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(6)
         phi = 0.4 * (a + a.dag())
         result = MatrixOps.apply_scalar_function(phi, lambda x: x)
@@ -56,7 +56,7 @@ class TestApplyScalarFunction:
     def test_constant_function_gives_scaled_identity(self):
         """apply_scalar_function(H, lambda x: 3.0) should be 3·I."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(5)
         phi = 0.2 * (a + a.dag())
         result = MatrixOps.apply_scalar_function(phi, lambda x: 3.0)
@@ -65,7 +65,7 @@ class TestApplyScalarFunction:
     def test_hermitian_preserved(self):
         """f(H) is Hermitian when H is Hermitian and f is real."""
         import qutip
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(8)
         phi = 0.5 * (a + a.dag())
         result = MatrixOps.apply_scalar_function(phi, np.cos)
@@ -82,7 +82,7 @@ class TestMakeNonlinearPotentialPhysics:
         (eigendecomposition vs. matrix exponential), so we allow ~1 ppm tolerance.
         """
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential, cos_full_correction
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential, cos_full_correction
         a = qutip.destroy(10)
         phi = 0.4 * (a + a.dag())
         nl_generic = make_nonlinear_potential(np.cos)(phi)
@@ -92,7 +92,7 @@ class TestMakeNonlinearPotentialPhysics:
     def test_zero_operator_gives_zero(self):
         """nl(0) = V(phi_min+0) - V(phi_min) - 0 = 0 for any V."""
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         nl = make_nonlinear_potential(np.cos)
         zero_op = qutip.qzero(6)
         result = nl(zero_op)
@@ -101,7 +101,7 @@ class TestMakeNonlinearPotentialPhysics:
     def test_result_is_hermitian(self):
         """nl(H) must be Hermitian when H is Hermitian."""
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         a = qutip.destroy(8)
         phi = 0.5 * (a + a.dag())
         nl = make_nonlinear_potential(np.cos)
@@ -115,7 +115,7 @@ class TestMakeNonlinearPotentialPhysics:
         diagonal of the phase operator (where comparison is exact).
         """
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         # Diagonal phase operator: eigenvalues are just the diagonal entries
         angles = np.array([0.0, 0.05, 0.1, 0.15, 0.2])
         diag_op = qutip.Qobj(np.diag(angles))
@@ -134,7 +134,7 @@ class TestMakeNonlinearPotentialPhysics:
     def test_normalisation_independent_of_overall_scale(self):
         """Scaling V by a constant must not change nl (Ej_eff absorbs it)."""
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         a = qutip.destroy(8)
         phi = 0.3 * (a + a.dag())
         nl1 = make_nonlinear_potential(np.cos)(phi)
@@ -143,7 +143,7 @@ class TestMakeNonlinearPotentialPhysics:
 
     def test_invalid_phi_min_raises(self):
         """V''(phi_min) ≈ 0 should raise ValueError."""
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         # V(phi) = phi has V''=0 everywhere
         with pytest.raises(ValueError, match="quadratic extremum"):
             make_nonlinear_potential(lambda phi: phi, phi_min=0.0)
@@ -161,7 +161,7 @@ class TestFluxBiasedJunction:
     def test_biased_matches_unbiased_at_minimum(self):
         """cos(φ - φ_ext) expanded at φ_ext == cos(δφ) expanded at 0."""
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         phi_ext = 0.4
         a = qutip.destroy(10)
         # The phase fluctuation operator (small ZPF)
@@ -175,7 +175,7 @@ class TestFluxBiasedJunction:
     def test_biased_half_flux_is_sin_correction(self):
         """At phi_ext = pi/2, V(phi)=cos(phi - pi/2)=sin(phi); nl is well-defined."""
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         phi_ext = np.pi / 2
         a = qutip.destroy(8)
         phi_op = 0.15 * (a + a.dag())
@@ -201,7 +201,7 @@ class TestAsymmetricSQUID:
     def test_d0_matches_standard_cosine(self):
         """Symmetric SQUID (d=0) at phi_ext=0 → standard cos correction."""
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential, cos_full_correction
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential, cos_full_correction
         phi_ext, d = 0.0, 0.0
         def V_squid(phi):
             return np.cos(phi) * np.cos(phi_ext) + d * np.sin(phi) * np.sin(phi_ext)
@@ -216,7 +216,7 @@ class TestAsymmetricSQUID:
     def test_asymmetric_squid_returns_finite_hermitian(self):
         """Asymmetric SQUID at moderate bias gives finite, Hermitian result."""
         import qutip
-        from pyEPR.calcs.back_box_numeric import make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_nonlinear_potential
         phi_ext, d = 0.3, 0.1
         def V_squid(phi):
             return np.cos(phi) * np.cos(phi_ext) + d * np.sin(phi) * np.sin(phi_ext)
@@ -236,7 +236,7 @@ class TestEndToEndGenericPotential:
     def test_generic_cos_matches_builtin_use_full_cos(self):
         """make_nonlinear_potential(cos) passed as non_linear_potential must
         give the same result as use_full_cos=True."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization, make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization, make_nonlinear_potential
         freqs, Ljs, phi_zpf = _transmon_params()
         nl = make_nonlinear_potential(np.cos)
         f_generic, chi_generic = epr_numerical_diagonalization(
@@ -252,7 +252,7 @@ class TestEndToEndGenericPotential:
 
     def test_fluxonium_generic_returns_finite(self):
         """make_nonlinear_potential works for large phi_zpf (fluxonium regime)."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization, make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization, make_nonlinear_potential
         freqs, Ljs, phi_zpf = _fluxonium_params()
         nl = make_nonlinear_potential(np.cos)
         f_ND, chi_ND = epr_numerical_diagonalization(
@@ -263,7 +263,7 @@ class TestEndToEndGenericPotential:
 
     def test_fluxonium_generic_matches_use_full_cos(self):
         """Generic cos potential and use_full_cos=True must agree for fluxonium."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization, make_nonlinear_potential
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization, make_nonlinear_potential
         freqs, Ljs, phi_zpf = _fluxonium_params()
         nl = make_nonlinear_potential(np.cos)
         f_gen, _ = epr_numerical_diagonalization(

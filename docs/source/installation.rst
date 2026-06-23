@@ -25,23 +25,23 @@ Quick install
 
       .. code-block:: bash
 
-         pip install pyEPR-quantum
+         pip install pyEPR-pyaedt
 
    .. tab-item:: conda
 
-      ``pyEPR-quantum`` is available on the ``conda-forge`` channel:
+      ``pyEPR-pyaedt`` is available on the ``conda-forge`` channel:
 
       .. code-block:: bash
 
          conda create -n pyepr python=3.11
          conda activate pyepr
-         conda install -c conda-forge pyepr-quantum
+         conda install -c conda-forge pyepr-pyaedt
 
       .. note::
 
-         The conda-forge package name is ``pyepr-quantum`` (lower-case).
-         The PyPI name is ``pyEPR-quantum``.  Either way, you import it as
-         ``import pyEPR as epr``.
+         The conda-forge package name is ``pyepr-pyaedt`` (lower-case).
+         The PyPI name is ``pyEPR-pyaedt``.  Either way, you import it as
+         ``import pyEPR_pyaedt as epr``.
 
    .. tab-item:: uv
 
@@ -50,7 +50,7 @@ Quick install
 
       .. code-block:: bash
 
-         uv pip install pyEPR-quantum
+         uv pip install pyEPR-pyaedt
 
 .. _install-dev:
 

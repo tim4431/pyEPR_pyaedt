@@ -1,7 +1,7 @@
 pyEPR package
 =============
 
-.. automodule:: pyEPR
+.. automodule:: pyEPR_pyaedt
    :members:
    :undoc-members:
    :show-inheritance:

@@ -347,7 +347,7 @@ def DataFrame_col_diff(PS, indx=0):
 
 def DataFrame_display_side_by_side(*args, do_display=True):
     """
-    from pyEPR.toolbox.pythonic import display_dfs
+    from pyEPR_pyaedt.toolbox.pythonic import display_dfs
     https://stackoverflow.com/questions/38783027/jupyter-notebook-display-two-pandas-tables-side-by-side
     """
     from IPython.display import display_html

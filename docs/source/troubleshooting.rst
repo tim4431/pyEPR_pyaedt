@@ -30,7 +30,7 @@ incompatible with Python 3.10+.
 
 .. code-block:: bash
 
-    pip install --upgrade pyEPR-quantum
+    pip install --upgrade pyEPR-pyaedt
 
 If you are working from source, pull the latest master and reinstall:
 
@@ -249,5 +249,5 @@ If your issue is not listed here:
 1. Search `existing issues <https://github.com/zlatko-minev/pyEPR/issues>`_
    — it may already be reported and answered.
 2. Open a new issue with the full traceback, your pyEPR version
-   (``import pyEPR; print(pyEPR.__version__)``), Python version, operating
+   (``import pyEPR_pyaedt; print(pyEPR_pyaedt.__version__)``), Python version, operating
    system, and Ansys AEDT version.

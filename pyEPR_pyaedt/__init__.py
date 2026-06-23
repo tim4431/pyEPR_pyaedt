@@ -221,13 +221,13 @@ def __getattr__(name):
         import warnings
         new_name, attr = _DEPRECATED_ALIASES[name]
         warnings.warn(
-            f"pyEPR.{name} is deprecated and will be removed in a future release. "
-            f"Use pyEPR.{new_name} instead.",
+            f"pyEPR_pyaedt.{name} is deprecated and will be removed in a future release. "
+            f"Use pyEPR_pyaedt.{new_name} instead.",
             DeprecationWarning,
             stacklevel=2,
         )
         return globals()[attr]
-    raise AttributeError(f"module 'pyEPR' has no attribute {name!r}")
+    raise AttributeError(f"module 'pyEPR_pyaedt' has no attribute {name!r}")
 
 
 # TODO: Add "about" method. Add to tutorial

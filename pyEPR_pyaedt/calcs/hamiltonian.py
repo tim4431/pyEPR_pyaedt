@@ -102,7 +102,7 @@ class MatrixOps(object):
         Examples
         --------
         >>> import qutip, numpy as np
-        >>> from pyEPR.calcs.hamiltonian import MatrixOps
+        >>> from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         >>> a = qutip.destroy(8)
         >>> phi = 0.3 * (a + a.dag())
         >>> cos_phi = MatrixOps.apply_scalar_function(phi, np.cos)

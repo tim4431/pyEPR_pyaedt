@@ -3,7 +3,7 @@
 My First pyEPR Script
 """
 
-from pyEPR import *
+from pyEPR_pyaedt import *
 
 # 1.  Project and design. Open link to HFSS controls.
 project_info = ProjectInfo(

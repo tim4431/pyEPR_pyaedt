@@ -39,7 +39,7 @@ from .solution_types import normalize as _normalize_solution_type
 
 # PyAEDT connection backend. All `ansys.aedt.core` usage is confined to
 # `_pyaedt_backend`; importing it here is cheap (the heavy PyAEDT import is
-# deferred until a connection is actually attempted), so `pyEPR.ansys` still
+# deferred until a connection is actually attempted), so `pyEPR_pyaedt.ansys` still
 # imports cleanly on machines without AEDT.
 from ._pyaedt_backend import (
     connect_desktop as _connect_desktop,

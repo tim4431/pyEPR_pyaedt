@@ -10,7 +10,7 @@ This module is the **single place** in pyEPR that imports
 ``ansys.aedt.core`` (PyAEDT).  Everything PyAEDT-specific is confined here so
 that the rest of the package — and in particular ``solution_types`` and
 ``calcs/`` — never pulls PyAEDT (or any Windows-only dependency) into its
-import graph.  ``pyEPR.ansys`` imports *names* from here but the heavy PyAEDT
+import graph.  ``pyEPR_pyaedt.ansys`` imports *names* from here but the heavy PyAEDT
 import is deferred until a connection is actually attempted.
 
 Why PyAEDT
@@ -45,14 +45,14 @@ from . import logger
 # ---------------------------------------------------------------------------
 # Mirror the win32com handling in ansys.py: importing pyEPR must never fail
 # just because PyAEDT is absent (the no-HFSS analysis path, the calcs/ and
-# solution_types modules, and downstream quantum-metal all import pyEPR on
+# solution_types modules, and downstream quantum-metal all import pyEPR_pyaedt on
 # machines without AEDT).  The import is therefore attempted lazily and any
 # failure is recorded, surfacing only when a connection is requested.
 
 PYAEDT_INSTALL_HINT = (
     "PyAEDT is required to connect to Ansys AEDT/HFSS.\n"
     "    Install it with:  pip install ansys-aedt-core\n"
-    "    (or:  pip install pyEPR-quantum[aedt])"
+    "    (or:  pip install pyEPR-pyaedt[aedt])"
 )
 
 _pyaedt = None

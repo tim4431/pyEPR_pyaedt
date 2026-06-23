@@ -30,7 +30,7 @@ class Convert:
 
     .. code-block:: python
 
-       from pyEPR.toolbox.conversions import Convert
+       from pyEPR_pyaedt.toolbox.conversions import Convert
 
        Lj_nH, Cs_fF = 11, 60
        Convert.transmon_print_all_params(Lj_nH, Cs_fF);

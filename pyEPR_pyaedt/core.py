@@ -34,10 +34,10 @@ def __getattr__(name):
     if name in _DEPRECATED_ALIASES:
         import warnings
         warnings.warn(
-            f"pyEPR.core.{name} is deprecated and will be removed in a future release. "
-            f"Use pyEPR.core.{_NEW_NAMES[name]} instead.",
+            f"pyEPR_pyaedt.core.{name} is deprecated and will be removed in a future release. "
+            f"Use pyEPR_pyaedt.core.{_NEW_NAMES[name]} instead.",
             DeprecationWarning,
             stacklevel=2,
         )
         return _DEPRECATED_ALIASES[name]
-    raise AttributeError(f"module 'pyEPR.core' has no attribute {name!r}")
+    raise AttributeError(f"module 'pyEPR_pyaedt.core' has no attribute {name!r}")

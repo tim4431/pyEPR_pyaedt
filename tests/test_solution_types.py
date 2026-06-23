@@ -9,7 +9,7 @@ Designed to run without Ansys, COM, Qt, or Windows-specific dependencies.
 """
 import pytest
 
-from pyEPR.solution_types import (
+from pyEPR_pyaedt.solution_types import (
     DRIVEN_MODAL,
     DRIVEN_MODAL_NAMES,
     DRIVEN_TERMINAL,

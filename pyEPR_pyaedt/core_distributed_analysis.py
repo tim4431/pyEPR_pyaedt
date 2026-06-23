@@ -85,7 +85,7 @@ class DistributedAnalysis(object):
         .. code-block:: python
             :linenos:
 
-            import pyEPR as epr
+            import pyEPR_pyaedt as epr
             pinfo = epr.ProjectInfo(project_path = path_to_project,
                                     project_name = 'pyEPR_tutorial1',
                                     design_name  = '1. single_transmon')
@@ -243,7 +243,7 @@ class DistributedAnalysis(object):
     def calc_p_junction_single(self, mode, variation, U_E=None, U_H=None):
         """
         This function is used in the case of a single junction only.
-        For multiple junctions, see :func:`~pyEPR.DistributedAnalysis.calc_p_junction`.
+        For multiple junctions, see :func:`~pyEPR_pyaedt.DistributedAnalysis.calc_p_junction`.
 
         Assumes no lumped capacitive elements.
         """
@@ -993,7 +993,7 @@ class DistributedAnalysis(object):
     def calc_p_junction(self, variation, U_H, U_E, Ljs, Cjs):
         """
         For a single specific mode.
-        Expected that you have specified the mode before calling this, :func:`~pyEPR.DistributedAnalysis.set_mode`.
+        Expected that you have specified the mode before calling this, :func:`~pyEPR_pyaedt.DistributedAnalysis.set_mode`.
 
         Expected to precalc U_H and U_E for mode, will return pandas pd.Series object:
 
@@ -1200,7 +1200,7 @@ class DistributedAnalysis(object):
         Iterates over all requested variations and eigenmodes, computes EPR
         participation ratios (p_mj), zero-point fluctuations (φ_zpf), junction
         currents and voltages, and saves the results to an HDF5/pickle file
-        readable by :class:`~pyEPR.QuantumAnalysis`.
+        readable by :class:`~pyEPR_pyaedt.QuantumAnalysis`.
 
         Parameters
         ----------
@@ -1210,7 +1210,7 @@ class DistributedAnalysis(object):
         modes : list of int, optional
             Eigenmode indices to include (e.g. ``[0, 2, 3]`` to skip mode 1).
             Defaults to all modes.  **Use consistent indices** when later calling
-            :meth:`~pyEPR.QuantumAnalysis.analyze_all_variations`.
+            :meth:`~pyEPR_pyaedt.QuantumAnalysis.analyze_all_variations`.
         append_analysis : bool, optional
             If ``True`` (default), skip variations already present in the results
             file.  Set to ``False`` to recompute and overwrite everything.

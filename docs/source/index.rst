@@ -4,7 +4,7 @@
 pyEPR — Energy-Participation-Ratio Framework
 *********************************************
 
-**Version**: |version| | **License**: BSD-3-Clause | `GitHub <https://github.com/zlatko-minev/pyEPR>`_ | `PyPI <https://pypi.org/project/pyEPR-quantum/>`_
+**Version**: |version| | **License**: BSD-3-Clause | `GitHub <https://github.com/zlatko-minev/pyEPR>`_ | `PyPI <https://pypi.org/project/pyEPR-pyaedt/>`_
 
 .. image:: _static/read_me_0.png
    :width: 100%
@@ -56,19 +56,19 @@ Quick install
 
       .. code-block:: bash
 
-         pip install pyEPR-quantum
+         pip install pyEPR-pyaedt
 
    .. tab-item:: conda
 
       .. code-block:: bash
 
-         conda install -c conda-forge pyepr-quantum
+         conda install -c conda-forge pyepr-pyaedt
 
    .. tab-item:: uv
 
       .. code-block:: bash
 
-         uv pip install pyEPR-quantum
+         uv pip install pyEPR-pyaedt
 
 No Ansys licence? Start with :ref:`without-hfss` or open
 `Tutorial 6 on Binder <https://mybinder.org/v2/gh/zlatko-minev/pyEPR/master?filepath=_tutorial_notebooks%2FTutorial%206.%20EPR%20without%20HFSS%20%E2%80%94%20purely%20numerical%20workflow.ipynb>`_.
@@ -80,7 +80,7 @@ Five-line quickstart
 
 .. code-block:: python
 
-   import pyEPR as epr
+   import pyEPR_pyaedt as epr
 
    pinfo = epr.ProjectInfo(project_path=r'C:\sims', project_name='my_chip',
                             design_name='qubit_cavity')

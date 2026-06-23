@@ -9,7 +9,7 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath("../../pyEPR"))
+sys.path.insert(0, os.path.abspath("../../pyEPR_pyaedt"))
 print(sys.path)
 
 # -- Project information -----------------------------------------------------
@@ -23,9 +23,9 @@ author = "Zlatko Minev, Zaki Leghtas, and the pyEPR Team"
 html_title = "Welcome to pyEPR! — Energy-Participation-Ratio Framework"
 
 # The full version, including alpha/beta/rc tags
-import pyEPR
+import pyEPR_pyaedt
 
-version = pyEPR.__version__
+version = pyEPR_pyaedt.__version__
 release = version
 
 # -- General configuration ---------------------------------------------------
@@ -103,7 +103,7 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "PyPI",
-            "url": "https://pypi.org/project/pyEPR-quantum/",
+            "url": "https://pypi.org/project/pyEPR-pyaedt/",
             "icon": "fa-solid fa-box",
         },
     ],

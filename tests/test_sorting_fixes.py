@@ -14,35 +14,35 @@ import pytest
 class TestSortDfCol:
     def test_integer_string_columns_sorted_numerically(self):
         """Old code: '10' < '2' (lexicographic). New code: 2 < 10 (numeric)."""
-        from pyEPR.toolbox.pythonic import sort_df_col
+        from pyEPR_pyaedt.toolbox.pythonic import sort_df_col
         cols = ["0", "10", "2", "9", "1"]
         df = pd.DataFrame(np.zeros((1, len(cols))), columns=cols)
         result = sort_df_col(df)
         assert list(result.columns) == ["0", "1", "2", "9", "10"]
 
     def test_float_columns_sorted_numerically(self):
-        from pyEPR.toolbox.pythonic import sort_df_col
+        from pyEPR_pyaedt.toolbox.pythonic import sort_df_col
         cols = [1.5, 0.1, 10.0, 2.3]
         df = pd.DataFrame(np.zeros((1, len(cols))), columns=cols)
         result = sort_df_col(df)
         assert list(result.columns) == [0.1, 1.5, 2.3, 10.0]
 
     def test_single_digit_unchanged(self):
-        from pyEPR.toolbox.pythonic import sort_df_col
+        from pyEPR_pyaedt.toolbox.pythonic import sort_df_col
         cols = ["0", "1", "2"]
         df = pd.DataFrame(np.zeros((1, 3)), columns=cols)
         result = sort_df_col(df)
         assert list(result.columns) == ["0", "1", "2"]
 
     def test_non_numeric_columns_sorted_lexicographically(self):
-        from pyEPR.toolbox.pythonic import sort_df_col
+        from pyEPR_pyaedt.toolbox.pythonic import sort_df_col
         cols = ["beta", "alpha", "gamma"]
         df = pd.DataFrame(np.zeros((1, 3)), columns=cols)
         result = sort_df_col(df)
         assert list(result.columns) == ["alpha", "beta", "gamma"]
 
     def test_data_preserved_after_sort(self):
-        from pyEPR.toolbox.pythonic import sort_df_col
+        from pyEPR_pyaedt.toolbox.pythonic import sort_df_col
         cols = ["0", "10", "2"]
         values = [[10, 20, 30]]
         df = pd.DataFrame(values, columns=cols)
@@ -57,21 +57,21 @@ class TestSortDfCol:
 
 class TestSortSeriesIdx:
     def test_integer_string_index_sorted_numerically(self):
-        from pyEPR.toolbox.pythonic import sort_Series_idx
+        from pyEPR_pyaedt.toolbox.pythonic import sort_Series_idx
         idx = ["0", "10", "2", "9", "1"]
         sr = pd.Series(range(5), index=idx)
         result = sort_Series_idx(sr)
         assert list(result.index) == ["0", "1", "2", "9", "10"]
 
     def test_float_index_sorted_numerically(self):
-        from pyEPR.toolbox.pythonic import sort_Series_idx
+        from pyEPR_pyaedt.toolbox.pythonic import sort_Series_idx
         idx = [1.5, 0.1, 10.0, 2.3]
         sr = pd.Series(range(4), index=idx)
         result = sort_Series_idx(sr)
         assert list(result.index) == [0.1, 1.5, 2.3, 10.0]
 
     def test_non_numeric_index_sorted_lexicographically(self):
-        from pyEPR.toolbox.pythonic import sort_Series_idx
+        from pyEPR_pyaedt.toolbox.pythonic import sort_Series_idx
         idx = ["beta", "alpha", "gamma"]
         sr = pd.Series(range(3), index=idx)
         result = sort_Series_idx(sr)

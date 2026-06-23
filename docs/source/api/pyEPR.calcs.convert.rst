@@ -1,7 +1,7 @@
 pyEPR.calcs.convert module
 ==========================
 
-.. automodule:: pyEPR.calcs.convert
+.. automodule:: pyEPR_pyaedt.calcs.convert
    :members:
    :undoc-members:
    :show-inheritance:

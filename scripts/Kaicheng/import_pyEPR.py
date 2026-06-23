@@ -5,7 +5,7 @@ Created on Tue Aug 22 11:21:01 2017
 @author: Zlatko
 """
 
-from pyEPR import *
+from pyEPR_pyaedt import *
 
 if 0:
     # Specify the HFSS project to be analyzed

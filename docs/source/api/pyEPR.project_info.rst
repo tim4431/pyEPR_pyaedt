@@ -1,7 +1,7 @@
 pyEPR.project\_info module
 ==========================
 
-.. automodule:: pyEPR.project_info
+.. automodule:: pyEPR_pyaedt.project_info
    :members:
    :undoc-members:
    :show-inheritance:

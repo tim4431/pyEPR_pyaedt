@@ -23,7 +23,7 @@ jobs:
           path: ~/.cache/pip
           key: pylint-${{ hashFiles('pyproject.toml') }}-${{ env.PIPCACHEVERSION }}
       - run: python -m pip install . pylint
-      - run: pylint --errors-only --jobs=0 pyEPR
+      - run: pylint --errors-only --jobs=0 pyEPR_pyaedt
 
   test:
     runs-on: ${{ matrix.os }}

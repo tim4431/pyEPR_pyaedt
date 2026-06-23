@@ -174,7 +174,7 @@ If you use pyEPR in your research, please cite:
   (EPR) open-source framework for quantum device design* (2021).
   `DOI:10.5281/zenodo.4552482 <https://doi.org/10.5281/zenodo.4552482>`_
 
-BibTeX entries are in ``pyEPR.bib`` at the root of the repository.
+BibTeX entries are in ``pyEPR_pyaedt.bib`` at the root of the repository.
 
 
 References

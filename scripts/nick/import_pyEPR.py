@@ -5,7 +5,7 @@ Created on Tue Aug 22 11:21:01 2017
 @author: Zlatko
 """
 
-from pyEPR import *
+from pyEPR_pyaedt import *
 
 if 0:
     # Specify the HFSS project to be analyzed
@@ -45,7 +45,7 @@ if 1:  # Hamiltonian analysis
     epr.plot_hamiltonian_results()
 
     if 1:
-        from pyEPR.toolbox_plotting import cmap_discrete
+        from pyEPR_pyaedt.toolbox_plotting import cmap_discrete
 
         f0 = epr.results.get_frequencies_HFSS()
         f1 = epr.results.get_frequencies_O1()

@@ -123,7 +123,7 @@ Verifying your setup with pyEPR
 
 .. code-block:: python
 
-   import pyEPR as epr
+   import pyEPR_pyaedt as epr
 
    pinfo = epr.ProjectInfo(
        project_path = r'C:\path\to\project',

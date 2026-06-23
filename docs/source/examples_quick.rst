@@ -26,7 +26,7 @@ the HFSS project.
 
 .. code-block:: python
 
-   import pyEPR as epr
+   import pyEPR_pyaedt as epr
 
    # ── Step 1: Connect to HFSS ───────────────────────────────────────────────
    pinfo = epr.ProjectInfo(
@@ -82,7 +82,7 @@ any platform.
 
 .. code-block:: python
 
-   import pyEPR as epr
+   import pyEPR_pyaedt as epr
 
    # Point directly at the saved HDF5 data file
    data_file = r'C:\sim_folder\cavity_with_two_qubits.hdf5'
@@ -109,7 +109,7 @@ any source (Palace, custom FEM code, analytic estimates).
 
 .. code-block:: python
 
-   import pyEPR as epr
+   import pyEPR_pyaedt as epr
    import pandas as pd
    import numpy as np
 

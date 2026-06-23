@@ -3,7 +3,7 @@ ProjectInfo — primary configuration class for pyEPR's HFSS interface.
 
 Stores connection handles (app, desktop, project, design, setup) and user-defined
 parameters (junctions, dissipative objects) needed by
-:class:`~pyEPR.core_distributed_analysis.DistributedAnalysis`.
+:class:`~pyEPR_pyaedt.core_distributed_analysis.DistributedAnalysis`.
 
 Copyright Zlatko Minev, Zaki Leghtas, and the pyEPR team
 2015, 2016, 2017, 2018, 2019, 2020
@@ -27,11 +27,11 @@ class ProjectInfo(object):
     """
     Primary class to store interface information between ``pyEPR`` and ``Ansys``.
 
-    * **Ansys:** stores and provides easy access to the ansys interface classes :py:class:`pyEPR.ansys.HfssApp`,
-      :py:class:`pyEPR.ansys.HfssDesktop`, :py:class:`pyEPR.ansys.HfssProject`, :py:class:`pyEPR.ansys.HfssDesign`,
-      :py:class:`pyEPR.ansys.HfssSetup` (which, if present could nbe a subclass, such as a driven modal setup
-      :py:class:`pyEPR.ansys.HfssDMSetup`, eigenmode :py:class:`pyEPR.ansys.HfssEMSetup`, or Q3D  :py:class:`pyEPR.ansys.AnsysQ3DSetup`),
-      the 3D modeler to design geometry :py:class:`pyEPR.ansys.HfssModeler`.
+    * **Ansys:** stores and provides easy access to the ansys interface classes :py:class:`pyEPR_pyaedt.ansys.HfssApp`,
+      :py:class:`pyEPR_pyaedt.ansys.HfssDesktop`, :py:class:`pyEPR_pyaedt.ansys.HfssProject`, :py:class:`pyEPR_pyaedt.ansys.HfssDesign`,
+      :py:class:`pyEPR_pyaedt.ansys.HfssSetup` (which, if present could nbe a subclass, such as a driven modal setup
+      :py:class:`pyEPR_pyaedt.ansys.HfssDMSetup`, eigenmode :py:class:`pyEPR_pyaedt.ansys.HfssEMSetup`, or Q3D  :py:class:`pyEPR_pyaedt.ansys.AnsysQ3DSetup`),
+      the 3D modeler to design geometry :py:class:`pyEPR_pyaedt.ansys.HfssModeler`.
     * **Junctions:** The class stores params about the design that the user puts will use, such as the names and
       properties of the junctions, such as which rectangle and line is associated with which junction.
 
@@ -558,8 +558,8 @@ class ProjectInfo(object):
         Returns
         -------
         tuple
-            ``(design, design.modeler)`` — the :class:`~pyEPR.ansys.HfssDesign`
-            and :class:`~pyEPR.ansys.HfssModeler` handles.
+            ``(design, design.modeler)`` — the :class:`~pyEPR_pyaedt.ansys.HfssDesign`
+            and :class:`~pyEPR_pyaedt.ansys.HfssModeler` handles.
 
         Example
         -------

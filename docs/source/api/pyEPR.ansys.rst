@@ -1,7 +1,7 @@
 pyEPR.ansys module
 ==================
 
-.. automodule:: pyEPR.ansys
+.. automodule:: pyEPR_pyaedt.ansys
    :members:
    :undoc-members:
    :show-inheritance:

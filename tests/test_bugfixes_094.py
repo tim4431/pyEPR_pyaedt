@@ -153,7 +153,7 @@ class TestConvergencePlotLogScale:
         import matplotlib
         matplotlib.use("Agg")  # non-interactive backend
         import matplotlib.pyplot as plt
-        from pyEPR.reports import plot_convergence_max_df
+        from pyEPR_pyaedt.reports import plot_convergence_max_df
 
         s = pd.Series([0.0, 0.0], name="Max Delta Freq")
         fig, ax = plt.subplots()
@@ -170,7 +170,7 @@ class TestConvergencePlotLogScale:
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
-        from pyEPR.reports import plot_convergence_max_df
+        from pyEPR_pyaedt.reports import plot_convergence_max_df
 
         s = pd.Series([0.5, 0.3, 0.1], name="Max Delta Freq")
         fig, ax = plt.subplots()

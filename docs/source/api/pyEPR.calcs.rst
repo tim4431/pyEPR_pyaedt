@@ -1,7 +1,7 @@
 pyEPR.calcs package
 ===================
 
-.. automodule:: pyEPR.calcs
+.. automodule:: pyEPR_pyaedt.calcs
    :members:
    :undoc-members:
    :show-inheritance:

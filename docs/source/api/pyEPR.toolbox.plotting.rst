@@ -1,7 +1,7 @@
 pyEPR.toolbox.plotting module
 =============================
 
-.. automodule:: pyEPR.toolbox.plotting
+.. automodule:: pyEPR_pyaedt.toolbox.plotting
    :members:
    :undoc-members:
    :show-inheritance:

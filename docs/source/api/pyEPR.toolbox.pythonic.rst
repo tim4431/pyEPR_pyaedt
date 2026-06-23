@@ -1,7 +1,7 @@
 pyEPR.toolbox.pythonic module
 =============================
 
-.. automodule:: pyEPR.toolbox.pythonic
+.. automodule:: pyEPR_pyaedt.toolbox.pythonic
    :members:
    :undoc-members:
    :show-inheritance:

@@ -12,7 +12,7 @@ import pytest
 
 def test_epr_numerical_diagonalization_runs():
     """Smoke test: diagonalization completes without error."""
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
     f_ND, chi_ND = epr_numerical_diagonalization(
         np.array([5.0]),
         np.array([10e-9]),
@@ -29,8 +29,8 @@ def test_analyze_variation_shape():
     analyze_variation returns results dict with expected keys for a 1-junction system.
     Uses a minimal HamiltonianResultsContainer built from scratch.
     """
-    pytest.importorskip("pyEPR")
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    pytest.importorskip("pyEPR_pyaedt")
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
 
     # 2-mode: qubit (5 GHz) + resonator (6.5 GHz), single junction
     freqs   = np.array([5.0, 6.5])
@@ -58,7 +58,7 @@ def test_quantum_analysis_from_file():
     if not os.path.exists(data_file):
         pytest.skip("data.npz not present — regenerate from an HFSS run")
 
-    import pyEPR as epr
+    import pyEPR_pyaedt as epr
     epra = epr.QuantumAnalysis(data_file)
     results = epra.analyze_all_variations(cos_trunc=8, fock_trunc=15,
                                           print_result=False)

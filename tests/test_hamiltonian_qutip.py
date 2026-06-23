@@ -25,8 +25,8 @@ FOCK = 6  # small truncation for fast tests
 
 def simple_1mode_hamiltonian(fock_trunc=FOCK, freq_hz=5e9, lj_h=10e-9, zpf=0.15):
     """Return H (Qobj) for a 1-mode, 1-junction system."""
-    from pyEPR.calcs.back_box_numeric import black_box_hamiltonian
-    from pyEPR.calcs.constants import fluxQ
+    from pyEPR_pyaedt.calcs.back_box_numeric import black_box_hamiltonian
+    from pyEPR_pyaedt.calcs.constants import fluxQ
 
     fs = np.array([freq_hz])
     ljs = np.array([lj_h])
@@ -36,8 +36,8 @@ def simple_1mode_hamiltonian(fock_trunc=FOCK, freq_hz=5e9, lj_h=10e-9, zpf=0.15)
 
 def simple_2mode_hamiltonian(fock_trunc=FOCK):
     """Return H (Qobj) for a 2-mode, 1-junction system."""
-    from pyEPR.calcs.back_box_numeric import black_box_hamiltonian
-    from pyEPR.calcs.constants import fluxQ
+    from pyEPR_pyaedt.calcs.back_box_numeric import black_box_hamiltonian
+    from pyEPR_pyaedt.calcs.constants import fluxQ
 
     fs = np.array([5e9, 6.5e9])
     ljs = np.array([10e-9])
@@ -54,7 +54,7 @@ class TestMatrixOps:
         """cos_approx(0) ≈ identity (missing constant term from Taylor, but
         Taylor of cos(x) around 0 has leading term 1, which cos_approx omits
         — it returns only the non-trivial part starting at x^2)."""
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         # Passing a zero operator: result should be a zero Qobj
         zero_op = qutip.qzero(FOCK)
         result = MatrixOps.cos_approx(zero_op, cos_trunc=5)
@@ -64,7 +64,7 @@ class TestMatrixOps:
 
     def test_cos_approx_returns_hermitian(self):
         """cos_approx of a Hermitian operator should be Hermitian."""
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(FOCK)
         x = a + a.dag()  # position-like, Hermitian
         result = MatrixOps.cos_approx(x, cos_trunc=6)
@@ -74,7 +74,7 @@ class TestMatrixOps:
 
     def test_cos_exact_hermitian(self):
         """MatrixOps.cos of a Hermitian operator should be Hermitian."""
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         a = qutip.destroy(FOCK)
         x = 0.1 * (a + a.dag())
         result = MatrixOps.cos(x)
@@ -89,8 +89,8 @@ class TestMatrixOps:
         constant (1) and quadratic (-x^2/2) terms which are handled elsewhere
         in the Hamiltonian.  The full cosine is 1 - x^2/2 + cos_approx(x).
         """
-        from pyEPR.calcs.hamiltonian import MatrixOps
-        from pyEPR.toolbox.pythonic import fact
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.toolbox.pythonic import fact
         a = qutip.destroy(FOCK)
         x = 0.05 * (a + a.dag())  # small argument
         exact = MatrixOps.cos(x)
@@ -101,7 +101,7 @@ class TestMatrixOps:
 
     def test_dot_product(self):
         """MatrixOps.dot should sum pairwise products correctly."""
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
         n = qutip.num(FOCK)
         I = qutip.qeye(FOCK)
         result = MatrixOps.dot([2.0, 3.0], [n, I])
@@ -116,7 +116,7 @@ class TestMatrixOps:
 class TestHamOps:
     def test_fock_state_on_single_mode(self):
         """fock_state_on({0:n}) should give |n>."""
-        from pyEPR.calcs.hamiltonian import HamOps
+        from pyEPR_pyaedt.calcs.hamiltonian import HamOps
         ket0 = HamOps.fock_state_on({0: 0}, FOCK, N_modes=1)
         ket1 = HamOps.fock_state_on({0: 1}, FOCK, N_modes=1)
         # |0> and |1> should be orthogonal
@@ -126,7 +126,7 @@ class TestHamOps:
 
     def test_fock_state_on_two_mode(self):
         """|1,0> and |0,1> should be orthogonal; each should have unit norm."""
-        from pyEPR.calcs.hamiltonian import HamOps
+        from pyEPR_pyaedt.calcs.hamiltonian import HamOps
         s10 = HamOps.fock_state_on({0: 1, 1: 0}, FOCK, N_modes=2)
         s01 = HamOps.fock_state_on({0: 0, 1: 1}, FOCK, N_modes=2)
         inner = s10.dag() * s01
@@ -137,7 +137,7 @@ class TestHamOps:
 
     def test_closest_state_to_exact_eigenstate(self):
         """Given an exact Fock state as eigenvector, closest_state_to finds it."""
-        from pyEPR.calcs.hamiltonian import HamOps
+        from pyEPR_pyaedt.calcs.hamiltonian import HamOps
         # Simple 1-mode number operator — eigenstates are Fock states
         n_op = qutip.num(FOCK)
         evals, evecs = n_op.eigenstates()
@@ -148,7 +148,7 @@ class TestHamOps:
 
     def test_closest_state_to_idx_exact(self):
         """closest_state_to_idx returns the index of the best-matching eigenstate."""
-        from pyEPR.calcs.hamiltonian import HamOps
+        from pyEPR_pyaedt.calcs.hamiltonian import HamOps
         n_op = qutip.num(FOCK)
         evals, evecs = n_op.eigenstates()
 
@@ -158,7 +158,7 @@ class TestHamOps:
 
     def test_identify_fock_levels_linear_hamiltonian(self):
         """For a linear 2-mode Hamiltonian, Fock level assignment should be trivial."""
-        from pyEPR.calcs.hamiltonian import HamOps
+        from pyEPR_pyaedt.calcs.hamiltonian import HamOps
         fock_trunc = 5
         I = qutip.qeye(fock_trunc)
         n = qutip.num(fock_trunc)
@@ -217,8 +217,8 @@ class TestBlackBoxHamiltonian:
 
     def test_individual_mode_returns_tuple(self):
         """individual=True should return (H_lin, H_nl) tuple."""
-        from pyEPR.calcs.back_box_numeric import black_box_hamiltonian
-        from pyEPR.calcs.constants import fluxQ
+        from pyEPR_pyaedt.calcs.back_box_numeric import black_box_hamiltonian
+        from pyEPR_pyaedt.calcs.constants import fluxQ
         fs = np.array([5e9])
         ljs = np.array([10e-9])
         fzpfs = np.array([[0.15 * fluxQ]])
@@ -230,8 +230,8 @@ class TestBlackBoxHamiltonian:
 
     def test_nan_in_fzpfs_raises(self):
         """NaN in fzpfs should raise AssertionError."""
-        from pyEPR.calcs.back_box_numeric import black_box_hamiltonian
-        from pyEPR.calcs.constants import fluxQ
+        from pyEPR_pyaedt.calcs.back_box_numeric import black_box_hamiltonian
+        from pyEPR_pyaedt.calcs.constants import fluxQ
         fzpfs = np.array([[np.nan * fluxQ]])
         with pytest.raises(AssertionError):
             black_box_hamiltonian(np.array([5e9]), np.array([10e-9]), fzpfs)
@@ -244,8 +244,8 @@ class TestBlackBoxHamiltonian:
 class TestMakeDispersive:
     def test_output_shapes_1mode(self):
         """make_dispersive: 1-mode system → f1s shape (1,), chis shape (1,1)."""
-        from pyEPR.calcs.back_box_numeric import black_box_hamiltonian, make_dispersive
-        from pyEPR.calcs.constants import fluxQ
+        from pyEPR_pyaedt.calcs.back_box_numeric import black_box_hamiltonian, make_dispersive
+        from pyEPR_pyaedt.calcs.constants import fluxQ
         H = simple_1mode_hamiltonian()
         phi_zpf = np.array([[0.15]])
         f0s = np.array([5.0])
@@ -255,7 +255,7 @@ class TestMakeDispersive:
 
     def test_output_shapes_2mode(self):
         """make_dispersive: 2-mode system → f1s shape (2,), chis shape (2,2)."""
-        from pyEPR.calcs.back_box_numeric import make_dispersive
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_dispersive
         H = simple_2mode_hamiltonian(fock_trunc=FOCK)
         phi_zpf = np.array([[0.15], [0.01]])
         f0s = np.array([5.0, 6.5])
@@ -265,7 +265,7 @@ class TestMakeDispersive:
 
     def test_chi_matrix_symmetric(self):
         """Cross-Kerr matrix should be symmetric."""
-        from pyEPR.calcs.back_box_numeric import make_dispersive
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_dispersive
         H = simple_2mode_hamiltonian(fock_trunc=FOCK)
         phi_zpf = np.array([[0.15], [0.01]])
         f0s = np.array([5.0, 6.5])
@@ -275,8 +275,8 @@ class TestMakeDispersive:
 
     def test_accepts_list_input(self):
         """make_dispersive should accept [H_lin, H_nl] list (individual=True path)."""
-        from pyEPR.calcs.back_box_numeric import black_box_hamiltonian, make_dispersive
-        from pyEPR.calcs.constants import fluxQ
+        from pyEPR_pyaedt.calcs.back_box_numeric import black_box_hamiltonian, make_dispersive
+        from pyEPR_pyaedt.calcs.constants import fluxQ
         fs = np.array([5e9])
         ljs = np.array([10e-9])
         fzpfs = np.array([[0.15 * fluxQ]])
@@ -290,7 +290,7 @@ class TestMakeDispersive:
 
     def test_rejects_non_qobj(self):
         """Passing a numpy array should raise TypeError."""
-        from pyEPR.calcs.back_box_numeric import make_dispersive
+        from pyEPR_pyaedt.calcs.back_box_numeric import make_dispersive
         with pytest.raises(TypeError):
             make_dispersive(np.eye(FOCK), fock_trunc=FOCK)
 
@@ -302,7 +302,7 @@ class TestMakeDispersive:
 class TestEprNumericalDiagonalizationFull:
     def test_return_H_flag(self):
         """return_H=True should return (f_ND, chi_ND, H) triple."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         result = epr_numerical_diagonalization(
             np.array([5.0]), np.array([10e-9]), np.array([[0.15]]),
             cos_trunc=6, fock_trunc=FOCK, return_H=True
@@ -313,8 +313,8 @@ class TestEprNumericalDiagonalizationFull:
 
     def test_custom_nonlinear_potential(self):
         """Passing a custom non_linear_potential should run without error."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
-        from pyEPR.calcs.hamiltonian import MatrixOps
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.hamiltonian import MatrixOps
 
         def quartic(x):
             return x**4 / 24.0  # trivial test potential
@@ -332,7 +332,7 @@ class TestEprNumericalDiagonalizationFull:
         (down-shift = positive value in chi_ND diagonal).
         Verified for a range of physically reasonable ZPF values.
         """
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         for zpf in [0.10, 0.15, 0.20]:
             _, chi_ND = epr_numerical_diagonalization(
                 np.array([5.0]), np.array([10e-9]), np.array([[zpf]]),
@@ -344,7 +344,7 @@ class TestEprNumericalDiagonalizationFull:
 
     def test_larger_zpf_gives_larger_anharmonicity(self):
         """Larger ZPF → stronger coupling → larger anharmonicity."""
-        from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+        from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
         _, chi_small = epr_numerical_diagonalization(
             np.array([5.0]), np.array([10e-9]), np.array([[0.05]]),
             cos_trunc=8, fock_trunc=9

@@ -12,7 +12,7 @@ Please also see the Jupyter notebook tutorials!
 @author: Zlatko
 """
 
-from pyEPR import ProjectInfo, DistributedAnalysis, QuantumAnalysis
+from pyEPR_pyaedt import ProjectInfo, DistributedAnalysis, QuantumAnalysis
 
 # 1.  Project and design. Open link to HFSS controls.
 project_info = ProjectInfo(

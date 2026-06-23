@@ -1,6 +1,6 @@
 # Zlatko
 
-from pyEPR import *
+from pyEPR_pyaedt import *
 import matplotlib.pyplot as plt
 
 if 1:

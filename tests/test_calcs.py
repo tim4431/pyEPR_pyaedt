@@ -11,7 +11,7 @@ import pytest
 
 def test_epr_diag_single_mode_shapes():
     """Output shapes are correct for a 1-mode 1-junction system."""
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
     freqs   = np.array([5.0])
     Ljs     = np.array([10e-9])
     phi_zpf = np.array([[0.15]])
@@ -27,7 +27,7 @@ def test_epr_diag_single_mode_physical_values():
     and self-Kerr (anharmonicity) is positive (sign convention: down shift = positive).
     Reference values captured from a known-good run.
     """
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
     freqs   = np.array([5.0])
     Ljs     = np.array([10e-9])
     phi_zpf = np.array([[0.15]])
@@ -46,7 +46,7 @@ def test_epr_diag_two_mode_shapes_and_symmetry():
     2-mode system (qubit + resonator): output shapes and dispersive matrix symmetry.
     chi_ND should be symmetric (chi_01 == chi_10).
     """
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
     freqs   = np.array([5.0, 6.5])
     Ljs     = np.array([10e-9])
     phi_zpf = np.array([[0.15], [0.01]])
@@ -62,7 +62,7 @@ def test_epr_diag_two_mode_shapes_and_symmetry():
 
 def test_epr_diag_two_mode_regression():
     """Regression: known-good values for a 2-mode qubit+resonator system."""
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
     freqs   = np.array([5.0, 6.5])
     Ljs     = np.array([10e-9])
     phi_zpf = np.array([[0.15], [0.01]])
@@ -79,7 +79,7 @@ def test_epr_diag_two_mode_regression():
 
 def test_epr_diag_bad_units_raises():
     """Passing frequencies in Hz instead of GHz should raise AssertionError."""
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
     with pytest.raises(AssertionError):
         epr_numerical_diagonalization(np.array([5e9]), np.array([10e-9]),
                                       np.array([[0.15]]))
@@ -87,7 +87,7 @@ def test_epr_diag_bad_units_raises():
 
 def test_epr_diag_bad_lj_units_raises():
     """Passing Lj in nH instead of Henries should raise AssertionError."""
-    from pyEPR.calcs.back_box_numeric import epr_numerical_diagonalization
+    from pyEPR_pyaedt.calcs.back_box_numeric import epr_numerical_diagonalization
     with pytest.raises(AssertionError):
         epr_numerical_diagonalization(np.array([5.0]), np.array([10.0]),
                                       np.array([[0.15]]))
@@ -99,7 +99,7 @@ def test_epr_diag_bad_lj_units_raises():
 
 def test_convert_lj_ej_roundtrip():
     """Lj -> Ej -> Lj roundtrip should be lossless."""
-    from pyEPR.calcs.convert import Convert
+    from pyEPR_pyaedt.calcs.convert import Convert
     Lj = 10e-9  # 10 nH
     Ej = Convert.Ej_from_Lj(Lj, units_in='H', units_out='GHz')
     Lj_back = Convert.Lj_from_Ej(Ej, units_in='GHz', units_out='H')
@@ -108,7 +108,7 @@ def test_convert_lj_ej_roundtrip():
 
 def test_convert_ec_cs_roundtrip():
     """Ec -> Cs -> Ec roundtrip should be lossless."""
-    from pyEPR.calcs.convert import Convert
+    from pyEPR_pyaedt.calcs.convert import Convert
     Ec = 0.2  # GHz
     Cs = Convert.Cs_from_Ec(Ec, units_in='GHz', units_out='fF')
     Ec_back = Convert.Ec_from_Cs(Cs, units_in='fF', units_out='GHz')
@@ -117,14 +117,14 @@ def test_convert_ec_cs_roundtrip():
 
 def test_convert_ej_physical_range():
     """10 nH junction should have Ej in the physically expected range (~16 GHz)."""
-    from pyEPR.calcs.convert import Convert
+    from pyEPR_pyaedt.calcs.convert import Convert
     Ej_GHz = Convert.Ej_from_Lj(10e-9, units_in='H', units_out='GHz')
     assert 10 < Ej_GHz < 25, f"Ej {Ej_GHz:.1f} GHz outside expected range for 10 nH"
 
 
 def test_convert_omega_from_lc():
     """LC resonator frequency formula: 1/sqrt(LC) should match expected GHz."""
-    from pyEPR.calcs.convert import Convert
+    from pyEPR_pyaedt.calcs.convert import Convert
     import numpy as np
     # L=1 nH, C=1 fF -> f = 1/(2*pi*sqrt(LC)) ~ 159 GHz
     L, C = 1e-9, 1e-15
@@ -139,14 +139,14 @@ def test_convert_omega_from_lc():
 
 def test_pyepr_imports():
     """Core pyEPR modules should import without error."""
-    import pyEPR as epr
+    import pyEPR_pyaedt as epr
     assert hasattr(epr, '__version__')
     assert epr.__version__  # non-empty string
 
 
 def test_pyepr_version_format():
     """Version string should follow semver-like format X.Y.Z."""
-    import pyEPR as epr
+    import pyEPR_pyaedt as epr
     parts = epr.__version__.split('.')
     assert len(parts) >= 2
     assert all(p.isdigit() for p in parts)

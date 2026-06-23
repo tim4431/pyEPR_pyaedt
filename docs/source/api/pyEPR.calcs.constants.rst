@@ -1,7 +1,7 @@
 pyEPR.calcs.constants module
 ============================
 
-.. automodule:: pyEPR.calcs.constants
+.. automodule:: pyEPR_pyaedt.calcs.constants
    :members:
    :undoc-members:
    :show-inheritance:

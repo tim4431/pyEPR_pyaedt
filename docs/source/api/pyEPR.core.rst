@@ -1,7 +1,7 @@
 pyEPR.core module
 =================
 
-.. automodule:: pyEPR.core
+.. automodule:: pyEPR_pyaedt.core
    :members:
    :undoc-members:
    :show-inheritance:

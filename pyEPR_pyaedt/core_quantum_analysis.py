@@ -234,7 +234,7 @@ class QuantumAnalysis(object):
     """Quantum Hamiltonian analysis from saved EPR data.
 
     Loads the HDF5/pickle data file written by
-    :meth:`~pyEPR.DistributedAnalysis.do_EPR_analysis`, computes dressed
+    :meth:`~pyEPR_pyaedt.DistributedAnalysis.do_EPR_analysis`, computes dressed
     eigenmode frequencies, anharmonicities, and cross-Kerr couplings using
     first-order perturbation theory and/or numerical diagonalization (via QuTiP).
 

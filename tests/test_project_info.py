@@ -13,7 +13,7 @@ class TestProjectInfoHFSS:
 
     @pytest.fixture(autouse=True)
     def connect(self):
-        import pyEPR as epr
+        import pyEPR_pyaedt as epr
         try:
             self.pinfo = epr.ProjectInfo(
                 project_path=r"..\_example_files",
@@ -53,18 +53,18 @@ class TestProjectInfoNoHFSS:
     """Tests that run without any HFSS connection."""
 
     def test_import(self):
-        import pyEPR as epr
+        import pyEPR_pyaedt as epr
         assert hasattr(epr, "ProjectInfo")
 
     def test_project_info_requires_path(self):
         """ProjectInfo with a nonexistent path should fail at connection, not import."""
-        import pyEPR as epr
+        import pyEPR_pyaedt as epr
         # Just check that the class is instantiable with args (connection fails later)
         assert callable(epr.ProjectInfo)
 
     def test_dissipative_container_standalone(self):
         """_Dissipative validation logic works without HFSS."""
-        from pyEPR.project_info import ProjectInfo
+        from pyEPR_pyaedt.project_info import ProjectInfo
         d = ProjectInfo._Dissipative()
         # Setting a valid key to an empty list is allowed
         d["seams"] = []
@@ -72,14 +72,14 @@ class TestProjectInfoNoHFSS:
 
     def test_dissipative_rejects_non_string_list(self):
         """_Dissipative should reject non-string-list values."""
-        from pyEPR.project_info import ProjectInfo
+        from pyEPR_pyaedt.project_info import ProjectInfo
         d = ProjectInfo._Dissipative()
         with pytest.raises(ValueError):
             d["seams"] = 42
 
     def test_dissipative_rejects_invalid_key(self):
         """_Dissipative should reject unknown keys."""
-        from pyEPR.project_info import ProjectInfo
+        from pyEPR_pyaedt.project_info import ProjectInfo
         d = ProjectInfo._Dissipative()
         with pytest.raises((KeyError, AttributeError, ValueError)):
             d["completely_invalid_key_xyz"] = []
