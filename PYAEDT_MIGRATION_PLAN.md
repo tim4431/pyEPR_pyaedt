@@ -62,8 +62,10 @@ live-validated native-COM code with PyAEDT calls that can't be tested off a
 running AEDT session. The PyAEDT app is already exposed (`pinfo.pyaedt`), so
 these are incremental, not blockers.
 
-- [ ] **Docs build** — run `make html` (zero-warning CI gate) after the rename;
-      fix any autodoc/cross-ref fallout. *(highest priority — the only outstanding CI risk)*
+- [x] **Docs build** — ✅ zero-warning `sphinx -b html` (exit 0); the rename is
+      docs-clean (all `pyEPR_pyaedt` autodoc/cross-refs resolve). Also fixed a
+      pre-existing duplicate `exclude_patterns` bug in `conf.py` that had silently
+      disabled the notebook/README excludes.
 - [ ] **Variables → PyAEDT** — route `HfssDesign.set_variable` / `set_variables` /
       `get_variable_value` through `pyaedt_app.variable_manager`, native fallback; add an `hfss` test.
 - [ ] **Setup creation → PyAEDT** — `create_em_setup` / `create_dm_setup` /
