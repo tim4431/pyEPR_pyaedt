@@ -367,7 +367,10 @@ class DistributedAnalysis(object):
             lv = self._nominal_variation  # "Cj='2fF' Lj='12.5nH'"
             lv = self._parse_listvariations(lv)
         else:
-            lv = self._list_variations[ureg(variation)]
+            # `variation` is a numeric index string ("0", "1", ...); index
+            # directly. (Older pint returned an int from ureg("0"); newer pint
+            # returns a Quantity, which is not a valid list index.)
+            lv = self._list_variations[int(variation)]
             lv = self._parse_listvariations(lv)
         return lv
 
