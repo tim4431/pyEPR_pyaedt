@@ -12,6 +12,14 @@ pyEPR — Energy-Participation-Ratio Framework
   <img width="80%" src="https://raw.githubusercontent.com/zlatko-minev/pyEPR/master/imgs/read_me_0.png" alt="HFSS field simulation: cavity E-field mode and qubit current-density mode">
 </p>
 
+> ⚙️ **`pyEPR_pyaedt` — PyAEDT rewrite.** This fork rewrites pyEPR's Ansys
+> connection layer to use **[PyAEDT](https://github.com/ansys/pyaedt)**
+> (`ansys-aedt-core`) instead of raw `win32com`, enabling cross-platform
+> (Linux/gRPC) operation. The package is **renamed** — install
+> `pip install pyEPR-pyaedt` and `import pyEPR_pyaedt`. The full EPR pipeline is
+> validated end-to-end against AEDT 2025 R2. See the
+> **[CHANGELOG](CHANGELOG.md)** for the complete list of changes.
+
 **pyEPR** bridges classical EM simulation and quantum circuit theory via the
 [energy-participation ratio (EPR)](https://arxiv.org/abs/2010.00620) method.
 Given a 3-D HFSS eigenmode simulation — or your own frequencies and inductances —

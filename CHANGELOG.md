@@ -5,6 +5,86 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## `pyEPR_pyaedt` — PyAEDT rewrite — 2026-06-23
+
+A fork of pyEPR whose **Ansys connection layer is rewritten to use
+[PyAEDT](https://github.com/ansys/pyaedt) (`ansys-aedt-core`)** instead of raw
+`win32com` COM — enabling cross-platform (Linux/gRPC) operation and offloading
+AEDT version churn to PyAEDT. The full EPR pipeline was validated **end-to-end
+against a live AEDT 2025 R2 session** (single-transmon: anharmonicity
+α ≈ 177 MHz, junction participation p₀ⱼ = 0.98, f_ND ≈ [4118, 9241] MHz).
+
+### ⚠️ Breaking changes
+
+- **Package renamed.** Import package `pyEPR` → **`pyEPR_pyaedt`**; PyPI
+  distribution `pyEPR-quantum` → **`pyEPR-pyaedt`**. `import pyEPR` and
+  `pip install pyEPR-quantum` no longer resolve — use
+  `pip install pyEPR-pyaedt` and `import pyEPR_pyaedt as epr`. The public API
+  (`ProjectInfo`, `DistributedAnalysis`, `QuantumAnalysis`, and the deprecated
+  `Project_Info`/`pyEPR_HFSSAnalysis`/`pyEPR_Analysis` aliases) is otherwise
+  unchanged.
+
+### New features
+
+- **Connection layer rewritten onto PyAEDT** (`pyEPR_pyaedt/_pyaedt_backend.py`,
+  new). PyAEDT now owns AEDT Desktop launch/attach, version detection
+  (`aedt_version_id`), and clean release. `HfssApp` builds on
+  `ansys.aedt.core.Desktop(...)` and hands pyEPR's existing wrapper tree the
+  native AEDT object handles PyAEDT exposes (`odesktop`/`oproject`/`odesign`/
+  `ofieldsreporter`/…), so the field-calculator engine and wrappers work
+  unchanged. `win32com`/`pythoncom`/`IsUserAnAdmin` are no longer required to
+  connect (the package imports cleanly on Linux/macOS).
+- **Live PyAEDT app exposed on the connection** — `pinfo.pyaedt` /
+  `design.pyaedt_app` lazily attach the PyAEDT `Hfss`/`Q3d` object bound to the
+  connected design, giving the **full PyAEDT high-level API** (modeler, setups,
+  `post`, `variable_manager`, …) alongside pyEPR's EPR analysis.
+- **Design variables routed through PyAEDT** — `HfssDesign.get_variable_value`/
+  `set_variable`/`set_variables`/`create_variable` use `variable_manager`
+  (replacing version-fragile `ChangeProperty` arrays), with native COM fallback.
+- **Remote/gRPC-safe exports** — `_remote_safe_export` makes `Export*` calls
+  remote-gRPC-safe (server `working_directory` + download), with **local
+  behaviour byte-identical** to the old `tempfile` path. Wired for eigenmodes
+  and the Q3D matrix.
+- **`[aedt]` optional dependency** — `pip install pyEPR-pyaedt[aedt]` pulls
+  `ansys-aedt-core`. It is required only for the live-HFSS path; the numerical /
+  no-HFSS workflow and `solution_types`/`calcs` import without it.
+- **pyaedt-compatible tutorials** — new `_tutorial_notebooks_pyaedt/` (the 6
+  tutorials with imports updated to `pyEPR_pyaedt`).
+- **Tests** — `tests/test_pyaedt_backend.py`, `test_pyaedt_app.py` (CI-safe:
+  import-isolation, fake-pyaedt connection routing, field-calculator call
+  contract, remote-safe export) and `test_pyaedt_live.py` (`@pytest.mark.hfss`).
+
+### Bug fixes
+
+Pre-existing dependency-compatibility bugs surfaced (and fixed) while validating
+the full pipeline against modern pandas/numpy/pint:
+
+- **pandas ≥ 2.2** — `read_csv(delim_whitespace=True)` (removed) → `sep=r"\s+"`
+  in the Q3D matrix reader.
+- **pint** — `self._list_variations[ureg(variation)]` (newer pint returns a
+  `Quantity`, not a valid list index) → `int(variation)` (4 sites).
+- **NumPy 2.0** — `np.mat` (removed) → `np.asmatrix` in `print_matrix`.
+- **pickle** — `pinfo.save()` pickled the live PyAEDT app (native object) because
+  `get_instance_vars()` invokes properties via `dir()`; added `pyaedt` to
+  `ProjectInfo._Forbidden`.
+- **single-variation `IndexError`** in `QuantumAnalysis.__init__` (counting
+  differing HFSS variables over an empty index).
+- **docs** — removed a duplicate `exclude_patterns = []` in `conf.py` that
+  silently disabled the notebook/README excludes; docs build is **zero-warning**.
+
+### Upgrading from pyEPR (`pyEPR-quantum`)
+
+- Reinstall under the new name and update imports:
+  `pip install pyEPR-pyaedt` → `import pyEPR_pyaedt as epr` (was `import pyEPR`).
+- For the **live-HFSS** path, install PyAEDT: `pip install pyEPR-pyaedt[aedt]`.
+  The no-HFSS numerical workflow needs no extra.
+- On **Windows + AEDT ≤ 2026 R1**, PyAEDT uses COM under the hood (no behaviour
+  change). On **Linux**, set `ansys.aedt.core.generic.settings.settings.use_grpc_api = True`
+  and connect to a gRPC AEDT session.
+- All analysis call signatures are unchanged — only the import name differs.
+
+---
+
 ## [0.9.5] — 2026-05-17
 
 ### New features
