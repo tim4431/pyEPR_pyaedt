@@ -1170,6 +1170,18 @@ class HfssDesign(COMWrapper):
         return self._design.GetNominalVariation()
 
     def create_variable(self, name, value, postprocessing=False):
+        app = self.pyaedt_app
+        if app is not None:
+            try:
+                app.variable_manager.set_variable(
+                    name, expression=value,
+                    is_post_processing=postprocessing, overwrite=True,
+                )
+                return
+            except Exception as e:  # pragma: no cover - needs live session
+                logger.debug("PyAEDT create_variable failed; COM fallback (%s)", e)
+
+        # --- native COM fallback ---
         if postprocessing is True:
             variableprop = "PostProcessingVariableProp"
         else:
@@ -1237,6 +1249,20 @@ class HfssDesign(COMWrapper):
         """
         assert isinstance(variation_string, str)
 
+        app = self.pyaedt_app
+        if app is not None:
+            try:
+                for var_name, var_value in self._variation_string_to_variable_list(
+                    variation_string, for_prop_server=False
+                ):
+                    app.variable_manager.set_variable(
+                        var_name, expression=var_value, overwrite=True
+                    )
+                return
+            except Exception as e:  # pragma: no cover - needs live session
+                logger.debug("PyAEDT set_variables failed; COM fallback (%s)", e)
+
+        # --- native COM fallback ---
         content = ["NAME:ChangedProps"]
         local, project = self._variation_string_to_variable_list(variation_string)
         # print('\nlocal=', local, '\nproject=', project)
@@ -1281,7 +1307,18 @@ class HfssDesign(COMWrapper):
         Returns:
             VariableString
         """
-        # TODO: check if variable does not exist and quit if it doesn't?
+        app = self.pyaedt_app
+        if app is not None:
+            try:
+                app.variable_manager.set_variable(
+                    name, expression=value,
+                    is_post_processing=postprocessing, overwrite=True,
+                )
+                return VariableString(name)
+            except Exception as e:  # pragma: no cover - needs live session
+                logger.debug("PyAEDT set_variable failed; COM fallback (%s)", e)
+
+        # --- native COM fallback ---
         if name not in self.get_variable_names():
             self.create_variable(name, value, postprocessing=postprocessing)
         else:
@@ -1292,6 +1329,12 @@ class HfssDesign(COMWrapper):
     def get_variable_value(self, name):
         """Can only access the design variables, i.e., the local ones
         Cannot access the project (global) variables, which start with $."""
+        app = self.pyaedt_app
+        if app is not None:
+            try:
+                return str(app[name].expression)
+            except Exception as e:  # pragma: no cover - needs live session
+                logger.debug("PyAEDT get_variable_value failed; COM fallback (%s)", e)
         return self._design.GetVariableValue(name)
 
     def get_variable_names(self):
