@@ -10,8 +10,10 @@ readme = { file = "README.md", content-type = "text/markdown" }
 license = "BSD-3-Clause"
 authors = [
     { name = "Zlatko K. Minev", email = "zlatko.minev@aya.yale.edu" },
+    { name = "tim4431" },
 ]
 maintainers = [
+    { name = "tim4431" },
     { name = "Zlatko Minev", email = "zlatko.minev@aya.yale.edu" },
     { name = "pyEPR team" },
 ]
@@ -44,10 +46,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/zlatko-minev/pyEPR"
+Homepage = "https://github.com/tim4431/pyEPR_pyaedt"
+Repository = "https://github.com/tim4431/pyEPR_pyaedt"
+Issues = "https://github.com/tim4431/pyEPR_pyaedt/issues"
+"Upstream (pyEPR)" = "https://github.com/zlatko-minev/pyEPR"
 Documentation = "https://pyepr-docs.readthedocs.io/en/latest/"
-Repository = "https://github.com/zlatko-minev/pyEPR"
-Issues = "https://github.com/zlatko-minev/pyEPR/issues"
 
 [tool.setuptools.dynamic]
 version = { attr = "pyEPR_pyaedt.__version__" }

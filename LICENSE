@@ -1,6 +1,8 @@
 pyEPR: Energy-participation approach to the design of quantum Josephson circuits in python
 Copyright (c) 2015,2016,2017,2018,2019-present
  Zlatko Minev, Zaki Leghtas, Phil Reinhold
+Copyright (c) 2026-present
+ tim4431 (github.com/tim4431) — pyEPR_pyaedt (PyAEDT rewrite)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

@@ -88,12 +88,13 @@ __credits__ = [
     "Asaf Diringer",
     "Will Livingston",
     "Steven Touzard",
+    "tim4431 (github.com/tim4431)",
 ]
 __license__ = "BSD-3-Clause"
 __version__ = "0.9.6"
-__maintainer__ = "Zlatko K. Minev and  Asaf Diringer"
+__maintainer__ = "tim4431, Zlatko K. Minev, and Asaf Diringer"
 __email__ = "zlatko.minev@aya.yale.edu"
-__url__ = r"https://github.com/zlatko-minev/pyEPR"
+__url__ = r"https://github.com/tim4431/pyEPR_pyaedt"
 __status__ = "Dev-Production"
 
 ##############################################################################
