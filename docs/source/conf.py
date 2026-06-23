@@ -59,7 +59,13 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["**.ipynb_checkpoints"]
+exclude_patterns = [
+    "**.ipynb_checkpoints",
+    # Stray READMEs inside the tutorials' example `*_hfss_files/` dirs are
+    # supplementary notes, not doc pages — otherwise myst flags them as
+    # orphan documents (`toc.not_included`).
+    "**/README.md",
+]
 
 suppress_warnings = [
     "myst.header",               # non-consecutive header levels in old notebooks
@@ -167,10 +173,9 @@ numfig_format = {"table": "Table %s"}
 # Usually you set "language" from the command line for these cases.
 language = "en"
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+# NOTE: `exclude_patterns` is defined once near the top of this file. A
+# duplicate definition here used to reset it to `[]`, silently disabling the
+# notebook/README excludes — removed.
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "colorful"
