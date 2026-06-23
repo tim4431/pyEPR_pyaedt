@@ -1920,7 +1920,7 @@ class AnsysQ3DSetup(HfssSetup):
 
         df_cmat = pd.read_csv(
             io.StringIO(s2[0].strip()),
-            delim_whitespace=True,
+            sep=r"\s+",
             skipinitialspace=True,
             index_col=0,
         )
