@@ -55,6 +55,29 @@ Branch: `claude/pyaedt-rewrite`. CI-safe suite: **182 pass / 1 skip**, `pylint -
 
 ---
 
+## Remaining work (actionable checklist)
+
+Deferred deliberately — each is **validation-gated**: it would replace
+live-validated native-COM code with PyAEDT calls that can't be tested off a
+running AEDT session. The PyAEDT app is already exposed (`pinfo.pyaedt`), so
+these are incremental, not blockers.
+
+- [ ] **Docs build** — run `make html` (zero-warning CI gate) after the rename;
+      fix any autodoc/cross-ref fallout. *(highest priority — the only outstanding CI risk)*
+- [ ] **Variables → PyAEDT** — route `HfssDesign.set_variable` / `set_variables` /
+      `get_variable_value` through `pyaedt_app.variable_manager`, native fallback; add an `hfss` test.
+- [ ] **Setup creation → PyAEDT** — `create_em_setup` / `create_dm_setup` /
+      `create_q3d_setup` via `pyaedt_app.create_setup`; keep the AEDT-2024.1 hybrid fix.
+- [ ] **Eigenmode read** — optional `pyaedt_app.post.get_solution_data` path beside `ExportEigenmodes`.
+- [ ] **Remaining export sites** — wire convergence/mesh/profile/network/report CSV
+      through `_remote_safe_export` (same one-liner; already work on local/COM sessions).
+- [ ] **`HfssModeler`** — optional wholesale port to PyAEDT's modeler API (not on the
+      EPR path; users can already reach it via `pinfo.pyaedt.modeler`).
+- [ ] **Ecosystem docs** — reframe `.claude/commands/*` + `ecosystem.md` for the fork
+      (they still reference the upstream `pyEPR-quantum` / quantum-metal relationship).
+
+---
+
 ## TL;DR
 
 - **The linchpin:** PyAEDT does not hide the native AEDT objects — it exposes
