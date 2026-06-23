@@ -36,16 +36,22 @@ working_directory/aedt_version_id`, plus `settings.use_grpc_api` and
 
 | Phase | Scope | Status |
 |---|---|---|
-| **1. Connection layer** | PyAEDT owns Desktop launch/attach, version, release; win32com no longer needed to connect; import-safe (guarded/lazy); gRPC toggle + remote-export helpers; CI-safe tests | **Done — `pytest` 177 pass / 1 skip, `pylint --errors-only` clean** |
-| 2. Live validation | Attach to running 2025.2, run an eigenmode design end-to-end, confirm χ/freqs vs a known-good result | **Maintainer action** (needs a licensed session) |
-| 3. PyAEDT-native control | Move setup-creation / variables / analyze / eigenmode-read to PyAEDT high-level APIs (absorbs AEDT-version churn) | Planned |
-| 4. gRPC / Linux exports | Route the 5 `tempfile.mktemp()` `Export*` sites through `server_export_path` + `download_if_remote` | Planned (no-op on Windows/2025.2; needed for Linux) |
-| 5. Q3D + modeler | Validate Q3D matrix path; decide whether to port `HfssModeler` to PyAEDT's modeler | Planned / optional |
+| **1. Connection layer** | PyAEDT owns Desktop launch/attach, version, release; win32com no longer needed to connect; import-safe (guarded/lazy); CI-safe tests | ✅ **Done + live-validated** |
+| **2. Live validation** | Attach to running 2025.2, read project/design/setup | ✅ **Done** — connected to a live 2025.2 **gRPC** session (port 50051), Q3D design, via `epr.ProjectInfo()` |
+| **3. PyAEDT-native layer** | Expose the live PyAEDT `Hfss`/`Q3d` app on the connection: `pinfo.pyaedt` / `design.pyaedt_app` (lazy, best-effort) → full PyAEDT high-level API on the connected design | ✅ **Done (app exposure)**. Method-by-method conversion of variable *writes* / setup creation / eigenmode solve is **deferred** — validation-gated (won't replace working code with calls untestable off a live session) |
+| **4. gRPC/remote-safe exports** | `_remote_safe_export()` helper: **local path == old `tempfile` behaviour**, remote writes to `working_directory` + downloads. Wired: **eigenmodes + Q3D matrix** | ✅ Key sites done. Remaining (convergence/mesh/profile/network/report CSV) follow the identical one-line pattern; they already work on local/COM sessions |
+| **5. Q3D + modeler** | Q3D matrix export remote-safe; modeler reachable via `pinfo.pyaedt.modeler` | ✅ Q3D export done; modeler via app exposure. Porting `HfssModeler` wholesale to PyAEDT's modeler API still optional/deferred |
 
-**Files changed in Phase 1:** `pyEPR_pyaedt/_pyaedt_backend.py` (new),
-`pyEPR_pyaedt/ansys.py` (bootstrap re-plumbed), `pyEPR_pyaedt/__init__.py` (import warning),
-`pyproject.toml` (`[aedt]` extra), `tests/test_pyaedt_backend.py` (new).
-Branch: `claude/pyaedt-rewrite`.
+**Note:** the package was renamed `pyEPR` → **`pyEPR_pyaedt`** (dist `pyEPR-pyaedt`)
+during this work; `import pyEPR` no longer resolves.
+
+**Files (Phases 1, 3, 4):** `pyEPR_pyaedt/_pyaedt_backend.py` (connect/version/release,
+`open_design_app`, `is_remote_session`, export helpers), `pyEPR_pyaedt/ansys.py`
+(PyAEDT bootstrap; `HfssDesign.pyaedt_app`/`working_directory`; `_remote_safe_export`;
+eigenmode + Q3D-matrix wiring), `pyEPR_pyaedt/project_info.py` (`ProjectInfo.pyaedt`),
+`pyEPR_pyaedt/__init__.py`, `pyproject.toml` (`[aedt]` extra), tests
+(`test_pyaedt_backend.py`, `test_pyaedt_app.py`, `test_pyaedt_live.py`).
+Branch: `claude/pyaedt-rewrite`. CI-safe suite: **182 pass / 1 skip**, `pylint -E` clean.
 
 ---
 

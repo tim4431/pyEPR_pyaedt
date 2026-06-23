@@ -23,6 +23,7 @@ import signal
 import tempfile
 import time
 import types
+import uuid
 from collections.abc import Iterable
 from copy import copy
 from numbers import Number
@@ -46,6 +47,9 @@ from ._pyaedt_backend import (
     get_odesktop as _get_odesktop,
     normalized_version as _normalized_version,
     release_desktop as _release_desktop,
+    open_design_app as _open_design_app,
+    is_remote_session as _is_remote_session,
+    download_if_remote as _download_if_remote,
 )
 
 # Handle a  few usually troublesome to import packages, which the use may not have
@@ -383,6 +387,38 @@ def set_property(prop_holder, prop_tab, prop_server, name, value, prop_args=None
             ],
         ]
     )
+
+
+# Sentinel for lazily-initialised attributes (distinct from None, which is a
+# valid "tried and failed" result).
+_UNSET = object()
+
+
+def _remote_safe_export(design, do_export, suffix=""):
+    """Run an AEDT ``Export*`` call and return a client-readable file path.
+
+    ``do_export`` is a callable taking the destination path.  On local sessions
+    (COM or local gRPC) this writes to a client temp file exactly as before.  On
+    a *remote* gRPC session it writes to the PyAEDT server-side
+    ``working_directory`` and downloads the result to the client.
+
+    Parameters
+    ----------
+    design : HfssDesign or None
+        Used to locate the server-side ``working_directory`` when remote.
+    do_export : callable
+        ``do_export(path)`` performs the actual ``Export*`` COM call.
+    suffix : str
+        File extension expected by the reader (e.g. ``".txt"``, ``".conv"``).
+    """
+    if _is_remote_session():
+        base = getattr(design, "working_directory", None) or tempfile.gettempdir()
+        fn = os.path.join(base, "pyepr_" + uuid.uuid4().hex + suffix)
+        do_export(fn)
+        return _download_if_remote(fn)
+    fn = tempfile.mktemp(suffix=suffix)
+    do_export(fn)
+    return fn
 
 
 class HfssApp(COMWrapper):
@@ -761,6 +797,9 @@ class HfssDesign(COMWrapper):
         self._design = design
         self.name = design.GetName()
         self._ansys_version = self.parent._ansys_version
+        # Lazily-attached PyAEDT Hfss/Q3d app bound to this design (see
+        # `pyaedt_app`). _UNSET = not yet attempted; None = attach failed/unavailable.
+        self._pyaedt_app = _UNSET
 
         try:
             # GetSolutionType() does not exist for non-HFSS designs (e.g. Q3D).
@@ -787,6 +826,41 @@ class HfssDesign(COMWrapper):
         self._mesh = design.GetModule("MeshSetup")
         self.modeler = HfssModeler(self, self._modeler, self._boundaries, self._mesh)
         self.optimetrics = Optimetrics(self)
+
+    @property
+    def pyaedt_app(self):
+        """The live PyAEDT ``Hfss``/``Q3d`` application bound to this design.
+
+        Lazily attached (best-effort) on first access to the running AEDT
+        session, giving access to the **full PyAEDT high-level API** (modeler,
+        setups, ``post``, ``variable_manager``, ...) on the same design pyEPR is
+        analysing.  Returns ``None`` if PyAEDT is unavailable or attachment
+        fails — pyEPR's own (native-COM) methods do not depend on it.
+
+        Examples
+        --------
+        >>> pinfo.design.pyaedt_app.variable_manager.variables   # PyAEDT API
+        >>> pinfo.design.pyaedt_app.modeler.object_names
+        """
+        if self._pyaedt_app is _UNSET:
+            try:
+                self._pyaedt_app = _open_design_app(
+                    self.parent.name, self.name, self.solution_type
+                )
+            except Exception as exc:  # pragma: no cover - depends on live session
+                logger.debug("Could not attach PyAEDT app to design %r: %s", self.name, exc)
+                self._pyaedt_app = None
+        return self._pyaedt_app
+
+    @property
+    def working_directory(self):
+        """Server-side PyAEDT working directory for this design, or ``None``.
+
+        Used to place ``Export*`` output where a remote gRPC server can write it
+        (see :func:`_remote_safe_export`).
+        """
+        app = self.pyaedt_app
+        return getattr(app, "working_directory", None) if app is not None else None
 
     def add_message(self, message: str, severity: int = 0):
         """
@@ -1713,33 +1787,35 @@ class AnsysQ3DSetup(HfssSetup):
         if frequency is None:
             frequency = self.get_frequency_Hz()
 
-        temp = tempfile.NamedTemporaryFile()
-        temp.close()
-        path = temp.name + ".txt"
         # <FileName>, <SolnType>, <DesignVariationKey>, <Solution>, <Matrix>, <ResUnit>,
         # <IndUnit>, <CapUnit>, <CondUnit>, <Frequency>, <MatrixType>, <PassNumber>,
         # <ACPlusDCResistance>
         logger.info(
-            f"Exporting matrix data to ({path}, {soln_type}, {variation}, "
+            f"Exporting matrix data ({soln_type}, {variation}, "
             f"{self.name}:{solution_kind}, "
             '"Original", "ohm", "nH", "fF", '
             f'"mSie", {frequency}, {MatrixType}, '
-            f"{pass_number}, {ACPlusDCResistance}"
+            f"{pass_number}, {ACPlusDCResistance})"
         )
-        self.parent._design.ExportMatrixData(
-            path,
-            soln_type,
-            variation,
-            f"{self.name}:{solution_kind}",
-            "Original",
-            "ohm",
-            "nH",
-            "fF",
-            "mSie",
-            frequency,
-            MatrixType,
-            pass_number,
-            ACPlusDCResistance,
+        # self.parent = the design. Local sessions still use a plain temp file.
+        path = _remote_safe_export(
+            self.parent,
+            lambda p: self.parent._design.ExportMatrixData(
+                p,
+                soln_type,
+                variation,
+                f"{self.name}:{solution_kind}",
+                "Original",
+                "ohm",
+                "nH",
+                "fF",
+                "mSie",
+                frequency,
+                MatrixType,
+                pass_number,
+                ACPlusDCResistance,
+            ),
+            suffix=".txt",
         )
 
         (
@@ -1909,9 +1985,14 @@ class HfssEMDesignSolutions(HfssDesignSolutions):
         """
         Returns the eigenmode data of freq and kappa/2p
         """
-        fn = tempfile.mktemp()
-        # print(self.parent.solution_name, lv, fn)
-        self._solutions.ExportEigenmodes(self.parent.solution_name, lv, fn)
+        # self.parent = the setup; self.parent.parent = the design (for remote
+        # gRPC export retrieval). Local sessions still use a plain temp file.
+        fn = _remote_safe_export(
+            self.parent.parent,
+            lambda path: self._solutions.ExportEigenmodes(
+                self.parent.solution_name, lv, path
+            ),
+        )
         data = np.genfromtxt(fn, dtype="str")
         # Update to Py 3:
         # np.loadtxt and np.genfromtxt operate in byte mode, which is the default string type in Python 2.

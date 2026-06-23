@@ -248,8 +248,58 @@ def release_desktop(desktop, close_projects: bool = False, close_on_exit: bool =
 
 
 # ---------------------------------------------------------------------------
+# Design-level application objects (full PyAEDT high-level API)
+# ---------------------------------------------------------------------------
+
+def open_design_app(project_name: str = None, design_name: str = None,
+                    solution_type: str = None):
+    """Attach a PyAEDT application object to a design in the running session.
+
+    Returns a PyAEDT ``Hfss`` (or ``Q3d`` for Q3D designs) bound to the given
+    project/design, attaching to the already-running AEDT session.  This gives
+    pyEPR access to the full PyAEDT high-level API (modeler, setups, post,
+    ``variable_manager``, ...) on the very design it is analysing.
+
+    Parameters
+    ----------
+    project_name, design_name : str, optional
+        Project/design to bind to.  ``None`` uses the active one.
+    solution_type : str, optional
+        pyEPR canonical solution type; ``"Q3D"`` selects a ``Q3d`` app, anything
+        else selects ``Hfss``.
+
+    Returns
+    -------
+    pyaedt application object (``Hfss`` or ``Q3d``)
+    """
+    pyaedt = _import_pyaedt()
+    kwargs = dict(new_desktop=False, close_on_exit=False)
+    if project_name:
+        kwargs["project"] = project_name
+    if design_name:
+        kwargs["design"] = design_name
+    if "q3d" in (solution_type or "").lower():
+        return pyaedt.Q3d(**kwargs)
+    return pyaedt.Hfss(**kwargs)
+
+
+# ---------------------------------------------------------------------------
 # Remote / gRPC file retrieval
 # ---------------------------------------------------------------------------
+
+def is_remote_session() -> bool:
+    """Return ``True`` if connected to a *remote* gRPC AEDT session.
+
+    Local sessions (COM, or local gRPC on the same machine) return ``False`` —
+    there, ``Export*`` files land on the local filesystem and need no download.
+    """
+    try:
+        from ansys.aedt.core.generic.settings import settings
+
+        return bool(getattr(settings, "remote_rpc_session", None))
+    except Exception:  # pragma: no cover - depends on PyAEDT internals
+        return False
+
 
 def download_if_remote(remote_path: str, overwrite: bool = True) -> str:
     """Download a server-side export file to the client when running remotely.

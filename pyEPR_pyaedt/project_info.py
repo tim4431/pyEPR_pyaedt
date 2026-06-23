@@ -277,6 +277,23 @@ class ProjectInfo(object):
             ports=pd.DataFrame(self.ports),
         )
 
+    @property
+    def pyaedt(self):
+        """The live PyAEDT application object for the connected design, or ``None``.
+
+        Shortcut for ``self.design.pyaedt_app``.  Gives the **full PyAEDT
+        high-level API** (modeler, setups, ``post``, ``variable_manager``, ...)
+        on the design pyEPR is connected to, alongside pyEPR's EPR analysis.
+        ``None`` if not connected to a design or PyAEDT attachment failed.
+
+        Examples
+        --------
+        >>> pinfo = epr.ProjectInfo()
+        >>> hfss = pinfo.pyaedt            # a PyAEDT Hfss/Q3d object
+        >>> hfss.modeler.object_names
+        """
+        return self.design.pyaedt_app if self.design is not None else None
+
     def connect_project(self) -> None:
         """Open the Ansys Desktop application and attach to the target project.
 
