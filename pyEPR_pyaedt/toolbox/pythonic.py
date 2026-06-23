@@ -241,7 +241,7 @@ def info_str_platform():
 
 
 def print_matrix(M, frmt="{:7.2f}", append_row=""):
-    M = np.mat(M)
+    M = np.asmatrix(M)  # np.mat removed in NumPy 2.0
     for row in np.array(M.tolist()):
         print(" ", end="")
         for chi in row:

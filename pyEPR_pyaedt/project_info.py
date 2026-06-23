@@ -258,6 +258,11 @@ class ProjectInfo(object):
         "setup",
         "_Forbidden",
         "junctions",
+        # `pyaedt` is a property returning the live PyAEDT app (native gRPC/COM
+        # object); like the handles above it must never be serialized. NOTE:
+        # get_instance_vars() enumerates dir() and invokes properties, so this
+        # also keeps pinfo.save() from pickling a ctypes-backed object.
+        "pyaedt",
     ]
 
     def save(self) -> dict:
