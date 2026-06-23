@@ -310,13 +310,14 @@ class QuantumAnalysis(object):
         # Unique variation params -- make a get function
         dum = DataFrame_col_diff(self._hfss_variables)
         self.hfss_vars_diff_idx = dum if not (dum.any() == False) else []
+        # Count of design variables that differ across variations. For a single
+        # variation `hfss_vars_diff_idx` is an empty list, so the count is 0.
+        # (The old code indexed the empty list -> spurious IndexError warning.)
+        idx = self.hfss_vars_diff_idx
         try:
-            self.Num_hfss_vars_diff_idx = len(
-                self.hfss_vars_diff_idx[self.hfss_vars_diff_idx == True]
-            )
-        except:
-            e = sys.exc_info()[0]
-            logger.warning("<p>Error: %s</p>" % e)
+            self.Num_hfss_vars_diff_idx = int((idx == True).sum()) if len(idx) else 0
+        except Exception as e:
+            logger.warning("Could not count differing HFSS variables: %s", e)
             self.Num_hfss_vars_diff_idx = 0
 
         if do_print_info:
