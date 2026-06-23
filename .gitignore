@@ -109,6 +109,9 @@ pyEPR_pyaedt/.pylintrc
 *.lock
 *.aedtresults/*
 *.aedtresults*
+# PyAEDT working/results dirs and AEDT autosaves (transient, created on solve)
+*.pyaedt/
+*.aedt.auto
 # AEDT working-copy duplicates opened in HFSS, e.g. "pyEPR_tutorial1 (1).aedt"
 * (*).aedt
 pyEPR_pyaedt/core.py.rej
