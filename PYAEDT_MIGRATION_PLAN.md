@@ -66,13 +66,23 @@ these are incremental, not blockers.
       docs-clean (all `pyEPR_pyaedt` autodoc/cross-refs resolve). Also fixed a
       pre-existing duplicate `exclude_patterns` bug in `conf.py` that had silently
       disabled the notebook/README excludes.
-- [ ] **Variables → PyAEDT** — route `HfssDesign.set_variable` / `set_variables` /
-      `get_variable_value` through `pyaedt_app.variable_manager`, native fallback; add an `hfss` test.
-- [ ] **Setup creation → PyAEDT** — `create_em_setup` / `create_dm_setup` /
-      `create_q3d_setup` via `pyaedt_app.create_setup`; keep the AEDT-2024.1 hybrid fix.
-- [ ] **Eigenmode read** — optional `pyaedt_app.post.get_solution_data` path beside `ExportEigenmodes`.
+- [x] **Variables → PyAEDT** — ✅ done + **validated live on tutorial2**: `get_variable_value`
+      11/11 identical to raw COM; `set_variable` create→read→delete round-trip; `set_variables`
+      reuses the parser + validated set path; native fallback. (`fab8adc`)
+- [x] **Q3D matrix pandas fix** — ✅ `delim_whitespace` (removed in pandas ≥2.2) → `sep=r"\s+"`.
+      Phase-4 export wiring confirmed writing the file live; full parse not end-to-end validatable
+      because tutorial2's Q3D exports **empty matrix sections** (no solved matrix). (`d490759`)
+- [ ] **Setup creation → PyAEDT** — `create_q3d_setup` is validatable on tutorial2; `create_em_setup`
+      / `create_dm_setup` / `create_dt_setup` need an HFSS design (see boundary below).
+- [ ] **Eigenmode read** — `pyaedt_app.post.get_solution_data` beside `ExportEigenmodes`.
 - [ ] **Remaining export sites** — wire convergence/mesh/profile/network/report CSV
       through `_remote_safe_export` (same one-liner; already work on local/COM sessions).
+
+> **Validation boundary (2026-06-22):** the standing test project `pyEPR_tutorial2` is a **Q3D**
+> design, so the **core EPR paths — eigenmode read, the field calculator, and HFSS em/dm/dt setup
+> creation — cannot be validated** against it. The Q3D matrix *parse* is also blocked (tutorial2's
+> matrix is unsolved/empty). To validate further, point the workflow at a **solved eigenmode HFSS
+> design** (the real EPR use case).
 - [ ] **`HfssModeler`** — optional wholesale port to PyAEDT's modeler API (not on the
       EPR path; users can already reach it via `pinfo.pyaedt.modeler`).
 - [ ] **Ecosystem docs** — reframe `.claude/commands/*` + `ecosystem.md` for the fork
