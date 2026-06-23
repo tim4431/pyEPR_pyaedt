@@ -74,15 +74,24 @@ these are incremental, not blockers.
       because tutorial2's Q3D exports **empty matrix sections** (no solved matrix). (`d490759`)
 - [ ] **Setup creation → PyAEDT** — `create_q3d_setup` is validatable on tutorial2; `create_em_setup`
       / `create_dm_setup` / `create_dt_setup` need an HFSS design (see boundary below).
-- [ ] **Eigenmode read** — `pyaedt_app.post.get_solution_data` beside `ExportEigenmodes`.
+- [x] **Eigenmode read** — ✅ validated end-to-end on a solved eigenmode design
+      (`single_transmon`): `eigenmodes()` returned `[4.289, 9.242] GHz` through the
+      Phase-4 `ExportEigenmodes` wiring.
 - [ ] **Remaining export sites** — wire convergence/mesh/profile/network/report CSV
       through `_remote_safe_export` (same one-liner; already work on local/COM sessions).
+- [ ] **Setup creation → PyAEDT** — `create_q3d_setup` / `create_em_setup` / etc. via
+      `pyaedt_app.create_setup` (still native; works).
 
-> **Validation boundary (2026-06-22):** the standing test project `pyEPR_tutorial2` is a **Q3D**
-> design, so the **core EPR paths — eigenmode read, the field calculator, and HFSS em/dm/dt setup
-> creation — cannot be validated** against it. The Q3D matrix *parse* is also blocked (tutorial2's
-> matrix is unsolved/empty). To validate further, point the workflow at a **solved eigenmode HFSS
-> design** (the real EPR use case).
+> **✅ Core EPR path validated end-to-end (2026-06-23).** After the maintainer solved an
+> eigenmode `single_transmon` design, the **complete pyEPR pipeline ran through PyAEDT** and
+> produced correct transmon physics: connection → eigenmodes `[4.289, 9.242] GHz` → field
+> calculator (E/H energies; `U_E/(U_E+U_H)`=0.98 transmon mode, 0.50 distributed mode) →
+> junction participation `p_0j=0.98` → `do_EPR_analysis` save → `QuantumAnalysis` (qutip) →
+> **anharmonicity α≈177 MHz, cross-Kerr≈2.3 MHz, f_ND≈[4118, 9241] MHz**. Exercising the full
+> pipeline surfaced and fixed **5 pre-existing dependency-compat bugs** (none from the rewrite):
+> pandas `delim_whitespace` (Q3D reader), pint `ureg`-indexing ×4 (`_get_lv`/variation), the
+> `pyaedt`-property pickle leak (`_Forbidden`), numpy `np.mat` (`print_matrix`), and a
+> single-variation `IndexError` in `QuantumAnalysis`.
 - [ ] **`HfssModeler`** — optional wholesale port to PyAEDT's modeler API (not on the
       EPR path; users can already reach it via `pinfo.pyaedt.modeler`).
 - [ ] **Ecosystem docs** — reframe `.claude/commands/*` + `ecosystem.md` for the fork
