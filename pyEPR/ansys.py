@@ -37,6 +37,17 @@ from . import logger
 from .solution_types import DRIVEN_MODAL_NAMES, DRIVEN_TERMINAL_NAMES
 from .solution_types import normalize as _normalize_solution_type
 
+# PyAEDT connection backend. All `ansys.aedt.core` usage is confined to
+# `_pyaedt_backend`; importing it here is cheap (the heavy PyAEDT import is
+# deferred until a connection is actually attempted), so `pyEPR.ansys` still
+# imports cleanly on machines without AEDT.
+from ._pyaedt_backend import (
+    connect_desktop as _connect_desktop,
+    get_odesktop as _get_odesktop,
+    normalized_version as _normalized_version,
+    release_desktop as _release_desktop,
+)
+
 # Handle a  few usually troublesome to import packages, which the use may not have
 # installed yet
 try:
@@ -45,11 +56,14 @@ except (ImportError, ModuleNotFoundError):
     pass  # raise NameError ("pythoncom module not installed. Please install.")
 
 try:
-    # TODO: Replace `win32com` with Linux compatible package.
-    # See Ansys python files in IronPython internal.
+    # win32com is no longer used to *connect* (PyAEDT owns the session). On
+    # Windows with AEDT <= 2026 R1 PyAEDT still returns win32com objects, so
+    # CDispatch is kept solely for the COMWrapper.release() isinstance check.
     from win32com.client import CDispatch, Dispatch
 except (ImportError, ModuleNotFoundError):
-    pass  # raise NameError ("win32com module not installed. Please install.")
+    # Bind safe fallbacks so pyEPR imports cleanly on Linux/macOS (no pywin32).
+    CDispatch = ()  # isinstance(x, ()) is always False -> release() no-ops
+    Dispatch = None
 
 try:
     from pint import UnitRegistry
@@ -259,12 +273,18 @@ def release():
         fn()
     time.sleep(0.1)
 
-    # Note that _GetInterfaceCount is a member
-    refcount = pythoncom._GetInterfaceCount()  # pylint: disable=no-member
+    # COM-only diagnostic: count live interface references. Meaningful only on
+    # Windows where pythoncom is present; skip silently otherwise (e.g. Linux
+    # gRPC sessions, where PyAEDT manages the connection lifecycle).
+    try:
+        refcount = pythoncom._GetInterfaceCount()  # pylint: disable=no-member
+    except (NameError, AttributeError):
+        return
 
     if refcount > 0:
-        print("Warning! %d COM references still alive" % (refcount))
-        print("Ansys will likely refuse to shut down")
+        logger.warning(
+            "%d COM references still alive; Ansys may refuse to shut down.", refcount
+        )
 
 
 class COMWrapper(object):
@@ -366,38 +386,75 @@ def set_property(prop_holder, prop_tab, prop_server, name, value, prop_args=None
 
 
 class HfssApp(COMWrapper):
-    def __init__(self, ProgID="AnsoftHfss.HfssScriptInterface"):
-        """
-        Connect to IDispatch-based COM object.
-            Parameter is the ProgID or CLSID of the COM object.
-            This is found in the regkey.
+    """Owns the PyAEDT-managed AEDT Desktop session.
 
-        Version changes for Ansys HFSS for the main object
-            v2016 - 'Ansoft.ElectronicsDesktop'
-            v2017 and subsequent - 'AnsoftHfss.HfssScriptInterface'
+    pyEPR delegates session launch/attach, version detection, and clean
+    release to PyAEDT.  ``self._desktop_app`` is the PyAEDT ``Desktop`` object;
+    ``self._app`` is the *native* AEDT desktop object (``odesktop``) that the
+    rest of pyEPR's wrappers drive directly.
 
-        """
+    Parameters
+    ----------
+    version : str, optional
+        AEDT version, e.g. ``"2025.2"`` for 2025 R2.  ``None`` selects the
+        latest installed version.
+    non_graphical : bool
+        Launch AEDT without its GUI (batch / headless).
+    new_desktop : bool
+        ``False`` (default) attaches to a running AEDT session; ``True``
+        launches a new one.
+    port, machine, aedt_process_id :
+        Remote/gRPC connection knobs; see ``_pyaedt_backend.connect_desktop``.
+    use_grpc : bool, optional
+        Force the gRPC transport (set ``True`` on Linux).  ``None`` keeps
+        PyAEDT's default (COM on Windows for AEDT <= 2026 R1).
+    """
+
+    def __init__(self, version=None, non_graphical=False, new_desktop=False,
+                 port=0, machine="", aedt_process_id=None, use_grpc=None):
         super(HfssApp, self).__init__()
-        self._app = Dispatch(ProgID)
+        self._desktop_app = _connect_desktop(
+            version=version,
+            non_graphical=non_graphical,
+            new_desktop=new_desktop,
+            port=port,
+            machine=machine,
+            aedt_process_id=aedt_process_id,
+            use_grpc=use_grpc,
+        )
+        # Native AEDT desktop object (win32com CDispatch on Windows/2025.2,
+        # gRPC wrapper on Linux); identical scripting API either way.
+        self._app = _get_odesktop(self._desktop_app)
+        self._version = _normalized_version(self._desktop_app)
 
     def get_app_desktop(self):
-        return HfssDesktop(self, self._app.GetAppDesktop())
-        # in v2016, there is also getApp - which can be called with HFSS
+        return HfssDesktop(self, self._app, version=self._version)
+
+    def release_desktop(self, close_projects=False, close_on_exit=False):
+        """Detach from AEDT.  By default leaves the session and projects open."""
+        return _release_desktop(
+            self._desktop_app,
+            close_projects=close_projects,
+            close_on_exit=close_on_exit,
+        )
 
 
 class HfssDesktop(COMWrapper):
-    def __init__(self, app, desktop):
+    def __init__(self, app, desktop, version=None):
         """
         :type app: HfssApp
-        :type desktop: Dispatch
+        :type desktop: native AEDT desktop object (from PyAEDT ``odesktop``)
+        :param version: pre-normalized "YYYY.N" version from PyAEDT; falls back
+            to ``GetVersion()`` if not provided.
         """
         super(HfssDesktop, self).__init__()
         self.parent = app
         self._desktop = desktop
 
         # ansys version, needed to check for command changes,
-        # since some commands have changed over the years
-        self.version = self.get_version()
+        # since some commands have changed over the years. Prefer PyAEDT's
+        # normalized "YYYY.N" string (e.g. "2025.2") over raw GetVersion().
+        self.version = version or self.get_version()
 
     def close_all_windows(self):
         self._desktop.CloseAllWindows()
@@ -3716,24 +3773,16 @@ class ConstantVecCalcObject(CalcObject):
 
 
 def get_active_project():
-    """If you see the error:
-    "The requested operation requires elevation."
-    then you need to run your python as an admin.
+    """Attach to the running AEDT session and return its active project.
+
+    Connection is managed by PyAEDT, which handles process attachment and
+    permissions.  The old "run Python as an administrator" requirement of the
+    raw COM ``Dispatch`` path no longer applies.
+
+    Returns
+    -------
+    HfssProject
     """
-    import ctypes
-    import os
-
-    try:
-        is_admin = os.getuid() == 0
-    except AttributeError:
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
-    if not is_admin:
-        print(
-            "\033[93m WARNING: you are not running as an admin! \
-            You need to run as an admin. You will probably get an error next.\
-                 \033[0m"
-        )
-
     app = HfssApp()
     desktop = app.get_app_desktop()
     return desktop.get_active_project()
@@ -3751,14 +3800,45 @@ def get_report_arrays(name: str):
 
 
 def load_ansys_project(
-    proj_name: str, project_path: str = None, extension: str = ".aedt"
+    proj_name: str,
+    project_path: str = None,
+    extension: str = ".aedt",
+    *,
+    version: str = None,
+    non_graphical: bool = False,
+    new_desktop: bool = False,
+    port: int = 0,
+    machine: str = "",
+    aedt_process_id: int = None,
+    use_grpc: bool = None,
 ):
-    """
-    Utility function to load an Ansys project.
+    """Connect to AEDT (via PyAEDT) and load/attach to an Ansys project.
 
-    Args:
-        proj_name : None  --> get active. (make sure 2 run as admin)
-        extension : `aedt` is for 2016 version and newer
+    Parameters
+    ----------
+    proj_name : str or None
+        Project name to open/select.  ``None`` attaches to the active project
+        in the running AEDT session.
+    project_path : str, optional
+        Directory containing ``proj_name``; required when opening from disk.
+    extension : str
+        Project file extension (``.aedt`` for 2016+).
+    version : str, optional
+        AEDT version, e.g. ``"2025.2"``.  ``None`` selects the latest installed.
+    non_graphical : bool
+        Launch AEDT headless.
+    new_desktop : bool
+        ``False`` (default) attaches to a running AEDT session; ``True``
+        launches a new one.
+    port, machine, aedt_process_id, use_grpc :
+        Remote/gRPC connection options forwarded to ``HfssApp`` /
+        ``_pyaedt_backend.connect_desktop``.
+
+    Returns
+    -------
+    tuple
+        ``(HfssApp, HfssDesktop, HfssProject)``.  ``HfssProject`` is ``None`` if
+        no project could be found/opened.
     """
     if project_path:
         # convert slashes correctly for system
@@ -3786,11 +3866,19 @@ def load_ansys_project(
                 "\t\tFile is locked. \N{FEARFUL FACE} If connection fails, delete the .lock file."
             )
 
-    app = HfssApp()
-    logger.info("\tOpened Ansys App")
+    app = HfssApp(
+        version=version,
+        non_graphical=non_graphical,
+        new_desktop=new_desktop,
+        port=port,
+        machine=machine,
+        aedt_process_id=aedt_process_id,
+        use_grpc=use_grpc,
+    )
+    logger.info("\tConnected to AEDT via PyAEDT")
 
     desktop = app.get_app_desktop()
-    logger.info(f"\tOpened Ansys Desktop v{desktop.get_version()}")
+    logger.info(f"\tOpened Ansys Desktop v{desktop.version}")
     # logger.debug(f"\tOpen projects: {desktop.get_project_names()}")
 
     if proj_name is not None:

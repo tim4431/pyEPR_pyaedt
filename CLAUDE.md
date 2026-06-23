@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |------|-------------|
 | `.claude/context/lessons-learned.md` | Before touching docs, CI, Sphinx config, or Ansys version code. Contains every hard-won fix from real build failures and regressions. |
 | `.claude/context/ecosystem.md` | Before changing public API, release timing, imports, or anything that could affect downstream users. Explains who uses pyEPR, the quantum-metal relationship, and the no-HFSS adoption path. |
+| `PYAEDT_MIGRATION_PLAN.md` | Before any work on PyAEDT compatibility / replacing the `win32com` COM layer. Phased plan for a pluggable connection backend (`com` vs `pyaedt`), the gRPC export-file gotcha, and the backwards-compat constraints. |
 
 ## Slash commands
 

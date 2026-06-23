@@ -67,6 +67,15 @@ test = [
     "pytest>=7.0",
     "pytest-cov",
 ]
+# PyAEDT — Ansys' official Python interface to AEDT/HFSS. Required only for the
+# live-HFSS field-extraction path (connecting to a running Ansys session); the
+# numerical / no-HFSS analysis path and `solution_types`/`calcs` do NOT need it.
+# `ansys-aedt-core` provides the `ansys.aedt.core` import path used here
+# (validated against 0.26.1 with AEDT 2025 R2). The legacy top-level `pyaedt`
+# distribution is also accepted at runtime as a fallback.
+aedt = [
+    "ansys-aedt-core",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

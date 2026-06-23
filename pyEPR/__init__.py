@@ -144,30 +144,20 @@ if config.internal.warn_missing_import:
             config.internal.error_msg_missing_import,
         )
 
+    # PyAEDT is the connection backend to Ansys AEDT/HFSS. It is required only
+    # for the live field-extraction path; the numerical / no-HFSS analysis path
+    # (and `solution_types` / `calcs`, used by downstream quantum-metal on
+    # Linux) import fine without it.
     try:
-        import pythoncom
+        import ansys.aedt.core  # noqa: F401
 
-        del pythoncom
+        del ansys
     except (ImportError, ModuleNotFoundError):
         logger.warning(
-            """IMPORT WARNING:
-        Python package 'pythoncom' could not be loaded
-        It is used in communicating with HFSS on PCs. If you wish to do this, please set it up.
-        For Linux, check the HFSS python linux files for the com module used. It is equivalent,
-        and can be used just as well.
-        %s""",
-            config.internal.error_msg_missing_import,
-        )
-
-    try:
-        from win32com.client import Dispatch, CDispatch
-
-        del Dispatch
-        del CDispatch
-    except (ImportError, ModuleNotFoundError):
-        logger.warning(
-            """IMPORT WARNING: Could not load from 'win32com.client'.
-        The communication to hfss won't work. If you want to use it, you need to set it up.
+            """IMPORT WARNING: `ansys-aedt-core` (PyAEDT) could not be loaded.
+        It is required to connect to Ansys AEDT/HFSS for EPR field extraction.
+        The numerical / no-HFSS analysis path does not need it. To enable HFSS:
+            $ pip install ansys-aedt-core
         %s""",
             config.internal.error_msg_missing_import,
         )
