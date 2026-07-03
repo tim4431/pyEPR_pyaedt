@@ -1618,12 +1618,29 @@ class HfssSetup(HfssPropertyObject):
         """
         # TODO: (Daniel) I think this data should be store in a more comfortable datatype (dictionary maybe?)
         # Write file
-        temp = tempfile.NamedTemporaryFile()
-        temp.close()
-        temp = temp.name + ".conv"
-        self.parent._design.ExportConvergence(
-            self.name, variation, *pre_fn_args, temp, overwrite
-        )
+        def do_export(path):
+            # AEDT 2025 R2 dropped the trailing `overwrite` argument (a gRPC
+            # session rejects the extra arg with GrpcApiError); older versions
+            # still require it, so fall back to the legacy signature.
+            try:
+                self.parent._design.ExportConvergence(
+                    self.name, variation, *pre_fn_args, path
+                )
+            except Exception:
+                self.parent._design.ExportConvergence(
+                    self.name, variation, *pre_fn_args, path, overwrite
+                )
+
+        try:
+            temp = _remote_safe_export(self.parent, do_export, suffix=".conv")
+        except Exception as e:
+            # Under gRPC an export with no solved solution raises
+            # (GrpcApiError) instead of silently writing nothing like COM did.
+            logger.error(
+                f"Failed to export convergence ({e}). Check that there is a "
+                "solved solution for this variation. Returning None."
+            )
+            return None, ""
 
         # Read File
         temp = Path(temp)
@@ -1653,20 +1670,38 @@ class HfssSetup(HfssPropertyObject):
 
         return df, text
 
-    def get_mesh_stats(self, variation=""):
+    def get_mesh_stats(self, variation="", pre_fn_args=[]):
         """variation should be in the form
         variation = "scale_factor='1.2001'" ...
         """
-        temp = tempfile.NamedTemporaryFile()
-        temp.close()
-        # print(temp.name0
         # seems broken in 2016 because of extra text added to the top of the file
-        self.parent._design.ExportMeshStats(
-            self.name, variation, temp.name + ".mesh", True
-        )
+        def do_export(path):
+            # AEDT 2025 R2 dropped the trailing `overwrite` argument (a gRPC
+            # session rejects the extra arg with GrpcApiError); older versions
+            # still require it, so fall back to the legacy signature.
+            try:
+                self.parent._design.ExportMeshStats(
+                    self.name, variation, *pre_fn_args, path
+                )
+            except Exception:
+                self.parent._design.ExportMeshStats(
+                    self.name, variation, *pre_fn_args, path, True
+                )
+
+        try:
+            fn = _remote_safe_export(self.parent, do_export, suffix=".mesh")
+        except Exception as e:
+            # Under gRPC an export with no solved mesh raises (GrpcApiError)
+            # instead of silently writing nothing like COM did.
+            logger.error(
+                f"Failed to export mesh statistics ({e}). Check that there is "
+                "a mesh available for this variation. If the design is not "
+                "solved, it will not have a mesh. Returning None."
+            )
+            return None
         try:
             df = pd.read_csv(
-                temp.name + ".mesh",
+                fn,
                 delimiter="|",
                 skipinitialspace=True,
                 skiprows=7,
@@ -1676,21 +1711,33 @@ class HfssSetup(HfssPropertyObject):
             )
             df = df.drop("Unnamed: 9", axis=1)
         except Exception as e:
-            print("ERROR in MESH reading operation.")
-            print(e)
-            print(
-                "ERROR!  Error in trying to read temporary MESH file "
-                + temp.name
-                + "\n. Check to see if there is a mesh available for this current variation.\
-                   If the nominal design is not solved, it will not have a mesh., \
-                   but will show up as a variation."
+            logger.error(
+                f"""ERROR in MESH reading operation.
+                {e}
+                Error in trying to read temporary MESH file {fn}
+                Check to see if there is a mesh available for this current variation.
+                If the nominal design is not solved, it will not have a mesh,
+                but will show up as a variation."""
             )
             df = None
         return df
 
     def get_profile(self, variation=""):
-        fn = tempfile.mktemp()
-        self.parent._design.ExportProfile(self.name, variation, fn, False)
+        def do_export(path):
+            # Same AEDT 2025 R2 signature change as get_mesh_stats above.
+            try:
+                self.parent._design.ExportProfile(self.name, variation, path)
+            except Exception:
+                self.parent._design.ExportProfile(self.name, variation, path, False)
+
+        try:
+            fn = _remote_safe_export(self.parent, do_export, suffix=".prof")
+        except Exception as e:
+            logger.error(
+                f"Failed to export the solve profile ({e}). Check that there "
+                "is a solved solution for this variation. Returning None."
+            )
+            return None
         df = pd.read_csv(
             fn,
             delimiter="\t",
@@ -1798,6 +1845,10 @@ class AnsysQ3DSetup(HfssSetup):
     def get_convergence(self, variation=""):
         """Return Q3D convergence data as a DataFrame (columns: Triangle, Delta %)."""
         return super().get_convergence(variation, pre_fn_args=["CG"])
+
+    def get_mesh_stats(self, variation=""):
+        """Q3D ``ExportMeshStats`` requires the data-block type (e.g. ``"CG"``)."""
+        return super().get_mesh_stats(variation, pre_fn_args=["CG"])
 
     def get_matrix(
         self,

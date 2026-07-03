@@ -240,13 +240,17 @@ def info_str_platform():
 # ==============================================================================
 
 
-def print_matrix(M, frmt="{:7.2f}", append_row=""):
+def format_matrix(M, frmt="{:7.2f}", append_row=""):
+    """Render a matrix as an aligned multi-line string (see ``print_matrix``)."""
     M = np.asmatrix(M)  # np.mat removed in NumPy 2.0
-    for row in np.array(M.tolist()):
-        print(" ", end="")
-        for chi in row:
-            print(frmt.format(chi), end="")
-        print(append_row + "\n", end="")
+    return "\n".join(
+        " " + "".join(frmt.format(chi) for chi in row) + append_row
+        for row in np.array(M.tolist())
+    )
+
+
+def print_matrix(M, frmt="{:7.2f}", append_row=""):
+    print(format_matrix(M, frmt=frmt, append_row=append_row))
 
 
 def divide_diagonal_by_2(CHI0, div_fact=2.0):
@@ -401,6 +405,7 @@ __all__ = [
     "df_find_index",
     "sort_df_col",
     "sort_Series_idx",
+    "format_matrix",
     "print_matrix",
     "print_NoNewLine",
     "DataFrame_col_diff",

@@ -1753,7 +1753,8 @@ class DistributedAnalysis(object):
         if save_csv:  # Save
             try:
                 path = Path(self.data_dir) / "hfss_eig_f_convergence.csv"
-                report.ExportToFile(report_name, path)
+                # str() required: the gRPC layer cannot marshal a pathlib.Path
+                report.ExportToFile(report_name, str(path))
                 logger.info(f"Saved convergences to {path}")
                 return pd.read_csv(path, index_col=0)
             except Exception as e:
