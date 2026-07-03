@@ -226,3 +226,31 @@ These paths must remain importable on Linux and macOS without `win32com` or any 
 - `tests/correct_results.pkl` and `tests/data*.npz` are reference fixtures for numerical regression tests.
 - qutip 5.x changed `ket.dag() * ket` to return a complex scalar instead of a 1×1 Qobj — guard with `hasattr(inner, "norm")` when writing quantum analysis tests.
 - When adding a new feature, add a test that would have caught the most obvious misuse. The test suite is the primary protection against regressions from upstream dependency changes (qutip, numpy, pandas, scipy all release breaking changes).
+
+## Validating tutorial notebooks against live HFSS
+
+Proven loop for making a tutorial notebook run end-to-end against a live AEDT session
+(requires a licensed machine; used for `_tutorial_notebooks_pyaedt/` on AEDT 2025 R2 gRPC):
+
+1. **Execute headlessly with `nbclient`** (installed in the env; nbconvert is not).
+   Read with `nbformat`, run `NotebookClient(nb, timeout=3600, kernel_name="python3",
+   resources={"metadata": {"path": <notebook dir>}})`, and call `nbformat.write` in a
+   `finally:` block so partial outputs land in the `.ipynb` even when a cell fails.
+   Each run gets a fresh kernel; the AEDT session is reused (PyAEDT attaches to it).
+2. **Triage by parsing the `.ipynb` JSON**, not by eyeballing: per-cell
+   `execution_count`, output types, `error` outputs, and streams grepped for `ERROR`.
+   The first cell with `execution_count == None` is where execution stopped.
+3. **Reproduce the failing AEDT call in a small throwaway probe script** that attaches
+   to the running session (read-only). Compare against **PyAEDT's own source for the same
+   call** — it is the authoritative reference for current AEDT scripting signatures.
+   Two recurring root causes: AEDT 2025 R2 removed trailing `overwrite` args from
+   `Export*` calls, and the gRPC layer only marshals plain str/int/float/bool/list
+   (never `pathlib.Path`); COM tolerated both, gRPC raises `GrpcApiError`.
+4. **Isolate plotting failures offline**: rebuild the offending DataFrame synthetically,
+   render with the `Agg` backend, and iterate without touching HFSS at all.
+5. After each fix: run the CI-safe suite (`python -m pytest`), then re-run the notebook
+   end-to-end. Done when every code cell has an execution count, there are **zero
+   `error` outputs / `ERROR` streams**, and the physics is sane (transmon: qubit EPR
+   ≈ 0.95+, α ≈ 150–200 MHz, χ a few MHz, PT vs ND within a few percent).
+6. Delete the probe scripts afterwards; record durable lessons here or in
+   `PYAEDT_MIGRATION_PLAN.md`, not in the scratch files.

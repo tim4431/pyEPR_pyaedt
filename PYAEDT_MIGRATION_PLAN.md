@@ -87,8 +87,22 @@ these are incremental, not blockers.
       Live-validated on 2025.2 gRPC (`single_transmon`, unsolved): convergence + profile export
       empty tables through the new signature; mesh stats degrade gracefully. **Mesh CSV parse
       (`skiprows=7`) still unvalidated against a solved 2025.2 design.**
-- [ ] **Remaining export sites** — wire network data / report CSV
-      through `_remote_safe_export` (same one-liner; already work on local/COM sessions).
+- [x] **Report CSV export** — ✅ (2026-07-03) `hfss_report_f_convergence` passed a
+      `pathlib.Path` to `ExportToFile`; the gRPC layer cannot marshal `Path` objects
+      (raises `GrpcApiError`) where COM tolerated it. Fixed with `str(path)`. Rule of thumb:
+      **every argument crossing into an AEDT call must be a plain str/int/float/bool/list.**
+- [ ] **Network-data export** — `ExportNetworkData` (driven-modal S-params) still uses a raw
+      `tempfile`; wire through `_remote_safe_export` (same one-liner; works on local sessions).
+
+> **✅ Tutorial 1 executed end-to-end on AEDT 2025.2 gRPC (2026-07-03).** All 31 code cells
+> clean via headless nbclient: connect → mesh/convergence exports → analyze → optimetrics →
+> 6-point `Lj_1` sweep (6–12 nH) → EPR → quantum analysis. Physics: qubit EPR ≈ 0.96–0.98,
+> α ≈ 156–183 MHz, cross-Kerr ≈ 1.9–4.7 MHz, cavity 9.24 GHz. Also fixed en route:
+> variations solved from a *reused mesh* export a CONV file with a single pass row + `N/A`
+> filler (parses to all-NaN) — `plot_convergence_maxdf_vs_sol` now drops non-finite points
+> before log-scaling; `print_result` used `logger.info("%s", print_matrix(...))` which logged
+> `None` and dumped matrices to a disconnected stdout stream — new `toolbox.pythonic.format_matrix`
+> returns the string and the log record now carries the matrix inline.
 - [ ] **Setup creation → PyAEDT** — `create_q3d_setup` / `create_em_setup` / etc. via
       `pyaedt_app.create_setup` (still native; works).
 
