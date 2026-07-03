@@ -1450,7 +1450,14 @@ class HfssSetup(HfssPropertyObject):
         """
         if name is None:
             name = self.name
-        return self.parent._design.Solve(name)
+        # The scripting API takes an *array* of setup names; COM tolerated a
+        # bare string but gRPC rejects it.  Fall back to Analyze (which PyAEDT
+        # uses exclusively) if Solve is unavailable.
+        try:
+            return self.parent._design.Solve([name])
+        except Exception:
+            logger.debug("Solve([%s]) failed; falling back to Analyze", name)
+            return self.parent._design.Analyze(name)
 
     def insert_sweep(
         self,

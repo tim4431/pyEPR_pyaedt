@@ -93,6 +93,17 @@ these are incremental, not blockers.
       **every argument crossing into an AEDT call must be a plain str/int/float/bool/list.**
 - [ ] **Network-data export** — `ExportNetworkData` (driven-modal S-params) still uses a raw
       `tempfile`; wire through `_remote_safe_export` (same one-liner; works on local sessions).
+- [x] **`HfssSetup.solve` gRPC fix** — ✅ (2026-07-03) `oDesign.Solve` takes an *array* of
+      setup names; COM tolerated a bare string, gRPC raises. Now calls `Solve([name])` with
+      an `Analyze(name)` fallback (PyAEDT uses Analyze exclusively). Also fixed the
+      `.aedt.lock` warning path in `load_ansys_project` (checked `...aedt\.lock` instead of
+      `...aedt.lock`, so it never fired).
+
+> **✅ All six tutorials validated end-to-end (2026-07-03).** T1 (startup + Lj sweep), T2
+> (field calculator, substrate EPR 87.3%), T3 (calcs/Convert), T4 (all 7 Optimetrics sweep
+> types created + 11-point file sweep solved → 17 variations), T5 (fluxonium full-cosine;
+> fixed Hz-labeled-as-GHz prints), T6 (numerical EPR, no HFSS). Notebook-side fixes: T4's
+> CSV path assumed the old `_tutorial_notebooks` dir name; T5 printed Hz values as GHz.
 
 > **✅ Tutorial 1 executed end-to-end on AEDT 2025.2 gRPC (2026-07-03).** All 31 code cells
 > clean via headless nbclient: connect → mesh/convergence exports → analyze → optimetrics →
