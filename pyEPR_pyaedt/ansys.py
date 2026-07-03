@@ -4036,7 +4036,7 @@ def load_ansys_project(
                 % project_path
             )
 
-        if (project_path / ".lock").is_file():
+        if project_path.with_name(project_path.name + ".lock").is_file():
             logger.warning(
                 "\t\tFile is locked. \N{FEARFUL FACE} If connection fails, delete the .lock file."
             )

@@ -254,3 +254,14 @@ Proven loop for making a tutorial notebook run end-to-end against a live AEDT se
    ≈ 0.95+, α ≈ 150–200 MHz, χ a few MHz, PT vs ND within a few percent).
 6. Delete the probe scripts afterwards; record durable lessons here or in
    `PYAEDT_MIGRATION_PLAN.md`, not in the scratch files.
+
+Session-state gotchas (both cost a debugging round in practice):
+
+- **AEDT discards unsaved solutions.** Solves live in the session until the *project* is
+  saved; closing HFSS without saving wipes `*.aedtresults` compatibility on the next open
+  (symptom: `# variations 0`, `has_fields() == False`, and `ClcEval` raising `GrpcApiError`).
+  After any scripted solve, call `pinfo.project.save()`. When `ClcEval`/field-calc calls
+  fail, check `eprh.variations` / `has_fields()` *before* suspecting the API layer.
+- **Stale `.aedt.lock` blocks `OpenProject`** (gRPC raises instead of showing the GUI
+  prompt). If no AEDT process has the project open (`odesktop.GetProjectList()` is empty),
+  delete the lock file and reconnect.
