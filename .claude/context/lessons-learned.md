@@ -211,6 +211,67 @@ from `pyEPR.solution_types` before any string comparison. This is
 already done in `HfssDesign.__init__`. Never add raw string comparisons
 elsewhere.
 
+### Report curve PropServers are variation-qualified (AEDT 2025 R2)
+
+Once a design has more than one solved variation, AEDT names report
+curve PropServers with the family variation string, e.g.
+`"Freq. vs. pass:re(Mode(1)):Lj_1='10nH' [Curve1]"`. The historical
+guess `"<report>:<trace>:Curve1"` is an invalid PropServer: Python-side
+`try/except` hides the exception but AEDT still logs a red
+"Script macro error: Invalid PropServer" in the Message Manager for
+every call.
+
+**Fix:** Discover the real names the way PyAEDT does:
+`reporter.GetChildObject(report).GetChildNames()` for the traces
+(skip children whose `GetPropNames()` lack both `Families` and
+`Source` — those are Legend/axes/etc.), then
+`reporter.GetCurvePropServerName(report, trace)` for each curve.
+Implemented in `DistributedAnalysis.hfss_report_f_convergence`.
+
+Related: pinning a *constant* design variable in the report family
+params makes AEDT warn "The variable 'x' doesn't have an associated
+sweep and is excluded from the definition of trace" — pin only the
+variables that actually vary across solved variations.
+
+### "Basis Order" property grid silently clamps -1 (AEDT 2025 R2)
+
+`ChangeProperty` on `AnalysisSetup:<name>` / `"Basis Order"` accepts
+0/1/2 but **silently clamps -1 ("Mixed Order") to 0 ("Zero Order")** —
+no error is raised, the value just doesn't stick. Since the tutorial
+project ships with `BasisOrder=-1`, the old
+`pinfo.setup.basis_order = BASIS_ORDER['Mixed Order']` line was
+actively *corrupting* the setup to zero-order on every run, which is
+why eigenfrequencies jittered ~0.3–1% per pass and never converged.
+
+**Fix:** `HfssSetup.basis_order` is now a property whose setter
+verifies the grid read-back and falls back to `EditSetup` via
+PyAEDT (`stp.props["BasisOrder"] = -1; stp.update()`), which accepts
+the full enum.
+
+**Related trap:** PyAEDT's `setup.props` blob is parsed from the
+last-*saved* project file. Calling `stp.update()` with stale props
+silently reverts unsaved setup edits (passes, delta_f, ...). The
+setter syncs the live grid values into the blob before updating —
+preserve that if you touch it.
+
+### Eigenmode convergence expectations in the tutorial project
+
+`_example_files/pyEPR_tutorial1.aedt` ships with `MaxDeltaFreq=0.02` (%)
+and `MaximumPasses=12`. Even at Mixed Order with the shipped mesh seeds
+(jj 20um, pads 100um), the transmon-mode frequency creeps up
+monotonically as the mesh refines the pad-edge field singularity —
+~0.2–0.5% per pass at pass 15+, so 0.02% (or 0.1%) per-pass targets are
+unreachable in reasonable time and HFSS warns "Adaptive Passes did not
+converge". Tutorial 1 now sets `passes=15`, `delta_f=0.5` (%), and
+`basis_order=Mixed Order` before any solve; keep those lines if the
+notebook is regenerated. The cavity mode converges to <0.01% almost
+immediately; it's only the lumped-junction mode that creeps.
+
+Also: the `(E_E-E_H)/E_E` "imbalance" printed by `do_EPR_analysis` is
+NOT a convergence indicator for junction modes — the H-field volume
+integral excludes lumped-inductor energy, so the imbalance ≈ the
+junction EPR (~96–98% for a transmon). Expected, not a bug.
+
 ---
 
 ## PyPI / README rendering

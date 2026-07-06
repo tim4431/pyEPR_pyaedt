@@ -1406,7 +1406,61 @@ class HfssSetup(HfssPropertyObject):
     pct_refinement = make_float_prop("Percent Refinement")
     delta_f = make_float_prop("Delta F")
     min_freq = make_float_prop("Min Freq")
-    basis_order = make_str_prop("Basis Order")
+    _basis_order_grid = make_str_prop("Basis Order")
+
+    @property
+    def basis_order(self):
+        """Basis-function order: ``0``, ``1``, ``2``, or ``-1`` ("Mixed Order").
+
+        See the ``BASIS_ORDER`` dict for the name-to-value mapping.
+        """
+        return self._basis_order_grid
+
+    @basis_order.setter
+    def basis_order(self, value):
+        value = int(value)
+        if str(self._basis_order_grid) == str(value):
+            return
+        try:
+            self._basis_order_grid = value
+        except Exception:
+            pass
+        if str(self._basis_order_grid) == str(value):
+            return
+        # The property grid silently clamps -1 ("Mixed Order") to 0
+        # ("Zero Order") on AEDT 2025 R2, corrupting the setup. EditSetup
+        # accepts the full enum; drive it through PyAEDT. PyAEDT's setup
+        # props are parsed from the last-*saved* project file, so sync the
+        # live grid values into the blob first or update() would silently
+        # revert unsaved setup edits (passes, delta_f, ...).
+        live = {}
+        for key, attr, cast in (
+            ("MinimumFrequency", "min_freq", str),
+            ("NumModes", "n_modes", int),
+            ("MaxDeltaFreq", "delta_f", float),
+            ("MaximumPasses", "passes", int),
+            ("PercentRefinement", "pct_refinement", lambda v: int(float(v))),
+        ):
+            try:
+                live[key] = cast(getattr(self, attr))
+            except Exception:  # driven setups lack the eigenmode props
+                pass
+        applied = False
+        app = self.parent.pyaedt_app
+        if app is not None:
+            for stp in app.setups:
+                if stp.name == self.name:
+                    for key, val in live.items():
+                        if key in stp.props:
+                            stp.props[key] = val
+                    stp.props["BasisOrder"] = value
+                    applied = bool(stp.update())
+                    break
+        if not (applied and str(self._basis_order_grid) == str(value)):
+            raise ValueError(
+                f"Could not set Basis Order = {value} on setup {self.name!r}: "
+                "AEDT rejected both ChangeProperty and EditSetup."
+            )
 
     def __init__(self, design, setup: str):
         """
