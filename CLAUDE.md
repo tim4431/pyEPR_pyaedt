@@ -255,7 +255,16 @@ Proven loop for making a tutorial notebook run end-to-end against a live AEDT se
 6. Delete the probe scripts afterwards; record durable lessons here or in
    `PYAEDT_MIGRATION_PLAN.md`, not in the scratch files.
 
-Session-state gotchas (both cost a debugging round in practice):
+Session-state gotchas (each cost a debugging round in practice):
+
+- **Mesh-operation edits do not regenerate an existing adaptive mesh.** Editing a
+  length-based mesh op (e.g. tightening the `jj` seed) and re-running `analyze()` makes
+  AEDT *continue* from the previous adaptive passes — the convergence table repeats the
+  earlier passes bit-identically and the new seeds never shape the mesh. Call
+  `oDesign.GetModule("AnalysisSetup").RevertSetupToInitial(setup_name)` first, then
+  re-solve. (Symptom in the tutorial transmon: qubit mode drifts monotonically upward
+  ~0.5%/pass with no plateau; with a regenerated seeded initial mesh it converges to
+  0.1% in ~8 passes.)
 
 - **AEDT discards unsaved solutions.** Solves live in the session until the *project* is
   saved; closing HFSS without saving wipes `*.aedtresults` compatibility on the next open
