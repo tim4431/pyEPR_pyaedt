@@ -1240,6 +1240,16 @@ class DistributedAnalysis(object):
             eprd.do_EPR_analysis(variations=['0', '2'], modes=[0, 1])
         """
 
+        if not self.pinfo.junctions:
+            raise ValueError(
+                "No junctions are registered in ProjectInfo, so there is nothing "
+                "to compute the EPR against. Define them first, e.g.\n"
+                "    pinfo.junctions['j1'] = {'Lj_variable': 'Lj_1', 'rect': 'rect_jj1',\n"
+                "                             'line': 'line_jj1', 'length': epr.parse_units('100um')}\n"
+                "    pinfo.validate_junction_info()\n"
+                "If you restarted the Python kernel, re-run the junction-definition cell."
+            )
+
         if not modes is None:
             assert max(modes) < self.n_modes, (
                 "Non-existing mode selected. \n"
