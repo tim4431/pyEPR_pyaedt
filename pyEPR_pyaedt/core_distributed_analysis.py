@@ -1240,6 +1240,16 @@ class DistributedAnalysis(object):
             eprd.do_EPR_analysis(variations=['0', '2'], modes=[0, 1])
         """
 
+        if not self.pinfo.junctions:
+            raise ValueError(
+                "No junctions are registered in ProjectInfo, so there is nothing "
+                "to compute the EPR against. Define them first, e.g.\n"
+                "    pinfo.junctions['j1'] = {'Lj_variable': 'Lj_1', 'rect': 'rect_jj1',\n"
+                "                             'line': 'line_jj1', 'length': epr.parse_units('100um')}\n"
+                "    pinfo.validate_junction_info()\n"
+                "If you restarted the Python kernel, re-run the junction-definition cell."
+            )
+
         if not modes is None:
             assert max(modes) < self.n_modes, (
                 "Non-existing mode selected. \n"
@@ -1724,6 +1734,24 @@ class DistributedAnalysis(object):
         variation = self._get_lv(variation)
         report = oDesign._reporter
 
+        # Pin only the variables that actually vary across the solved
+        # variations. Pinning a constant variable makes AEDT warn "The
+        # variable 'x' doesn't have an associated sweep and is excluded
+        # from the definition of trace" for every report created.
+        values_by_name = {}
+        for variation_string in self._list_variations:
+            parsed = self._parse_listvariations(variation_string)
+            for name, value in zip(parsed[0::2], parsed[1::2]):
+                values_by_name.setdefault(name, set()).add(value)
+        varying = {n for n, vals in values_by_name.items() if len(vals) > 1}
+        if varying:
+            variation = [
+                x
+                for name, value in zip(variation[0::2], variation[1::2])
+                if name in varying
+                for x in (name, value)
+            ]
+
         # Create report
         ycomp = [f"re(Mode({i}))" for i in range(1, 1 + self.n_modes)]
         params = ["Pass:=", ["All"]] + variation
@@ -1734,10 +1762,26 @@ class DistributedAnalysis(object):
             report_name, "Pass", ycomp, params, pass_name="AdaptivePass"
         )
 
-        # Properties of lines
-        curves = [
-            f"{report_name}:re(Mode({i})):Curve1" for i in range(1, 1 + self.n_modes)
-        ]
+        # Properties of lines.
+        # Once a design has several variations, AEDT qualifies each curve
+        # PropServer with the variation string (e.g.
+        # "Freq. vs. pass:re(Mode(1)):Lj_1='10nH' [Curve1]"), so the
+        # historical "<report>:<trace>:Curve1" guess raises a script macro
+        # error in AEDT. Ask AEDT for the real names (same as PyAEDT).
+        try:
+            plot = report.GetChildObject(report_name)
+            curves = []
+            for trace in plot.GetChildNames():
+                child_props = set(plot.GetChildObject(trace).GetPropNames())
+                if {"Families", "Source"}.isdisjoint(child_props):
+                    continue  # Legend, axes, ... are children but not traces
+                names = report.GetCurvePropServerName(report_name, trace)
+                curves.extend(names or [f"{report_name}:{trace}"])
+        except Exception:  # pre-2022 AEDT: fall back to the legacy names
+            curves = [
+                f"{report_name}:re(Mode({i})):Curve1"
+                for i in range(1, 1 + self.n_modes)
+            ]
         # HFSS accepts only one curve per ChangeProperty call (confirmed against PyAEDT)
         for curve in curves:
             try:
@@ -1753,7 +1797,8 @@ class DistributedAnalysis(object):
         if save_csv:  # Save
             try:
                 path = Path(self.data_dir) / "hfss_eig_f_convergence.csv"
-                report.ExportToFile(report_name, path)
+                # str() required: the gRPC layer cannot marshal a pathlib.Path
+                report.ExportToFile(report_name, str(path))
                 logger.info(f"Saved convergences to {path}")
                 return pd.read_csv(path, index_col=0)
             except Exception as e:

@@ -37,6 +37,7 @@ from .toolbox.pythonic import (
     DataFrame_col_diff,
     divide_diagonal_by_2,
     print_color,
+    format_matrix,
     print_matrix,
     sort_df_col,
     sort_Series_idx,
@@ -906,7 +907,7 @@ class QuantumAnalysis(object):
         if type(result) is str or type(result) is int:
             result = self.results[str(result)]
 
-        pritm = lambda x, frmt="{:9.2g}": print_matrix(x, frmt=frmt)
+        pritm = lambda x, frmt="{:9.2g}": format_matrix(x, frmt=frmt)
 
         logger.info("*** P (participation matrix, normalized.)\n%s", pritm(result["Pm_normed"]))
         logger.info(

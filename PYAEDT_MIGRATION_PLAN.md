@@ -39,7 +39,7 @@ working_directory/aedt_version_id`, plus `settings.use_grpc_api` and
 | **1. Connection layer** | PyAEDT owns Desktop launch/attach, version, release; win32com no longer needed to connect; import-safe (guarded/lazy); CI-safe tests | ✅ **Done + live-validated** |
 | **2. Live validation** | Attach to running 2025.2, read project/design/setup | ✅ **Done** — connected to a live 2025.2 **gRPC** session (port 50051), Q3D design, via `epr.ProjectInfo()` |
 | **3. PyAEDT-native layer** | Expose the live PyAEDT `Hfss`/`Q3d` app on the connection: `pinfo.pyaedt` / `design.pyaedt_app` (lazy, best-effort) → full PyAEDT high-level API on the connected design | ✅ **Done (app exposure)**. Method-by-method conversion of variable *writes* / setup creation / eigenmode solve is **deferred** — validation-gated (won't replace working code with calls untestable off a live session) |
-| **4. gRPC/remote-safe exports** | `_remote_safe_export()` helper: **local path == old `tempfile` behaviour**, remote writes to `working_directory` + downloads. Wired: **eigenmodes + Q3D matrix** | ✅ Key sites done. Remaining (convergence/mesh/profile/network/report CSV) follow the identical one-line pattern; they already work on local/COM sessions |
+| **4. gRPC/remote-safe exports** | `_remote_safe_export()` helper: **local path == old `tempfile` behaviour**, remote writes to `working_directory` + downloads. Wired: **eigenmodes + Q3D matrix + convergence/mesh/profile** | ✅ Key sites done. Remaining (network/report CSV) follow the identical one-line pattern; they already work on local/COM sessions |
 | **5. Q3D + modeler** | Q3D matrix export remote-safe; modeler reachable via `pinfo.pyaedt.modeler` | ✅ Q3D export done; modeler via app exposure. Porting `HfssModeler` wholesale to PyAEDT's modeler API still optional/deferred |
 
 **Note:** the package was renamed `pyEPR` → **`pyEPR_pyaedt`** (dist `pyEPR-pyaedt`)
@@ -77,8 +77,43 @@ these are incremental, not blockers.
 - [x] **Eigenmode read** — ✅ validated end-to-end on a solved eigenmode design
       (`single_transmon`): `eigenmodes()` returned `[4.289, 9.242] GHz` through the
       Phase-4 `ExportEigenmodes` wiring.
-- [ ] **Remaining export sites** — wire convergence/mesh/profile/network/report CSV
-      through `_remote_safe_export` (same one-liner; already work on local/COM sessions).
+- [x] **Convergence/mesh/profile exports** — ✅ (2026-07-02) wired through
+      `_remote_safe_export` **and fixed for AEDT 2025 R2**: the scripting API dropped the
+      trailing `overwrite` argument from `ExportMeshStats`/`ExportConvergence`/`ExportProfile`
+      (matching PyAEDT's 3-arg calls); we try the new signature first and fall back to the
+      legacy one for older AEDT. Q3D overrides pass the `"CG"` data-block arg (per PyAEDT
+      `q3d.py`). Under gRPC a no-solution export now *raises* (`GrpcApiError`) where COM wrote
+      nothing — all three getters catch this and return `None` with a "design not solved?" log.
+      Live-validated on 2025.2 gRPC (`single_transmon`, unsolved): convergence + profile export
+      empty tables through the new signature; mesh stats degrade gracefully. **Mesh CSV parse
+      (`skiprows=7`) still unvalidated against a solved 2025.2 design.**
+- [x] **Report CSV export** — ✅ (2026-07-03) `hfss_report_f_convergence` passed a
+      `pathlib.Path` to `ExportToFile`; the gRPC layer cannot marshal `Path` objects
+      (raises `GrpcApiError`) where COM tolerated it. Fixed with `str(path)`. Rule of thumb:
+      **every argument crossing into an AEDT call must be a plain str/int/float/bool/list.**
+- [ ] **Network-data export** — `ExportNetworkData` (driven-modal S-params) still uses a raw
+      `tempfile`; wire through `_remote_safe_export` (same one-liner; works on local sessions).
+- [x] **`HfssSetup.solve` gRPC fix** — ✅ (2026-07-03) `oDesign.Solve` takes an *array* of
+      setup names; COM tolerated a bare string, gRPC raises. Now calls `Solve([name])` with
+      an `Analyze(name)` fallback (PyAEDT uses Analyze exclusively). Also fixed the
+      `.aedt.lock` warning path in `load_ansys_project` (checked `...aedt\.lock` instead of
+      `...aedt.lock`, so it never fired).
+
+> **✅ All six tutorials validated end-to-end (2026-07-03).** T1 (startup + Lj sweep), T2
+> (field calculator, substrate EPR 87.3%), T3 (calcs/Convert), T4 (all 7 Optimetrics sweep
+> types created + 11-point file sweep solved → 17 variations), T5 (fluxonium full-cosine;
+> fixed Hz-labeled-as-GHz prints), T6 (numerical EPR, no HFSS). Notebook-side fixes: T4's
+> CSV path assumed the old `_tutorial_notebooks` dir name; T5 printed Hz values as GHz.
+
+> **✅ Tutorial 1 executed end-to-end on AEDT 2025.2 gRPC (2026-07-03).** All 31 code cells
+> clean via headless nbclient: connect → mesh/convergence exports → analyze → optimetrics →
+> 6-point `Lj_1` sweep (6–12 nH) → EPR → quantum analysis. Physics: qubit EPR ≈ 0.96–0.98,
+> α ≈ 156–183 MHz, cross-Kerr ≈ 1.9–4.7 MHz, cavity 9.24 GHz. Also fixed en route:
+> variations solved from a *reused mesh* export a CONV file with a single pass row + `N/A`
+> filler (parses to all-NaN) — `plot_convergence_maxdf_vs_sol` now drops non-finite points
+> before log-scaling; `print_result` used `logger.info("%s", print_matrix(...))` which logged
+> `None` and dumped matrices to a disconnected stdout stream — new `toolbox.pythonic.format_matrix`
+> returns the string and the log record now carries the matrix inline.
 - [ ] **Setup creation → PyAEDT** — `create_q3d_setup` / `create_em_setup` / etc. via
       `pyaedt_app.create_setup` (still native; works).
 

@@ -83,12 +83,17 @@ def plot_convergence_maxdf_vs_sol(ax, s, s2, kw={}):
     """
     s = s.copy()
     s.index = s2
-    (s).plot(ax=ax, **{**_style_plot_conv_kw, **kw})
+    # Keep only finite points: a variation solved from a reused mesh reports a
+    # single pass with N/A delta-f, and log-scaling an axis that ends up with
+    # no finite positive data crashes the figure draw.
+    s = s[pd.notna(s.index)].dropna()
+    if not s.empty:
+        (s).plot(ax=ax, **{**_style_plot_conv_kw, **kw})
+        if (s > 0).any():
+            ax.set_yscale("log")
+        if (s.index > 0).any():
+            ax.set_xscale("log")
     _style_plot_convergence(ax, s.name, xlabel="Solved elements", y_title=True)
-    if (s > 0).any():
-        ax.set_yscale("log")
-    if (s2 > 0).any():
-        ax.set_xscale("log")
 
 
 def plot_q3d_convergence_main(epr, RES):
